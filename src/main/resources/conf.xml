@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<configuration>
+    <property>
+        <name>size</name>
+        <value>12</value>
+    </property>
+
+</configuration>
