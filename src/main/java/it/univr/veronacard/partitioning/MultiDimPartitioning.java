@@ -21,7 +21,8 @@ import static it.univr.veronacard.partitioning.StatsUtils.buildStatFile;
 public class MultiDimPartitioning {
 
   //private static final String dataDir = "C:\\workspace\\projects\\veronacard_analysis\\test\\test_partitioning\\";
-  private static final String dataDir = "/workspace/projects/veronacard/test/test_partitioning/";
+  private static final String dataDir = "/home/sangra/Documenti/UniVr/Tirocinio/veronacard/test/test_partitioning/";
+  //private static final String dataDir = "/workspace/projects/veronacard/test/test_partitioning/";
   private static final String dataFile = "vc_ticket_space_time.csv";
   private static final String outFile = "vc_ticket_space_time_transf.csv";
   private static final String fractalFile = "vc_ticket_space_time_fractal.csv";
@@ -174,7 +175,7 @@ public class MultiDimPartitioning {
 
     //generateRandomParts( input, new File( dataDir, randomPartDir ), splitSize, partPrefix );
     generateUniformMultiDimGridParts( input, new File( dataDir, mdGridPartDir ), splitSize, partPrefix, b, separator );
-    generateUniformMultiLevelGridParts( input, new File( dataDir, mlGridPartDir ), splitSize, partPrefix, b, separator );
+    //generateUniformMultiLevelGridParts( input, new File( dataDir, mlGridPartDir ), splitSize, partPrefix, b, separator );
 
     final double[] timeSplits = new double[] {
             1388575020000.000000,

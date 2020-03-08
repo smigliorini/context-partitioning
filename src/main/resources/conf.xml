@@ -1,9 +1,19 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
 
 <configuration>
-    <property>
-        <name>size</name>
-        <value>12</value>
-    </property>
-
+    <splitSizes>
+        <entry>
+            <key>ML_GRID</key>
+            <value>1048576</value>   <!--1024 * 1024-->
+        </entry>
+        <entry>
+            <key>DL_GRID</key>
+            <value>1048576</value>   <!--1024 * 1024-->
+        </entry>
+        <entry>
+            <key>CONTEXT_AWARE</key>
+            <value>1048576</value>   <!--1024 * 1024-->
+        </entry>
+    </splitSizes>
 </configuration>

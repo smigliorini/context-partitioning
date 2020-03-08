@@ -360,14 +360,14 @@ public class PartUtils {
           final String key = format( partTemplate, xPart, yPart, tPart, aPart );
           keySet.add( key );
 
-          wr.write( format( "%s,%s%n", key, line ) );
+          wr.write( format( "%s,%s%n", key, line ) );//write in the file the entire kei and value.
         }
       }
     }
 
     // --- write the final index -----------------------------------------------
 
-    try( BufferedReader br = new BufferedReader( new FileReader( tempFile ) ) ) {
+    try( BufferedReader br = new BufferedReader( new FileReader( tempFile ) ) ) { //tempFiles contains the indexes
       final Map<String, BufferedWriter> bwMap = new HashMap<>();
       final Iterator<String> it = keySet.iterator();
 
@@ -406,7 +406,7 @@ public class PartUtils {
             ( ( p.length() % splitSize > 0 ) ? 1 : 0 ) );
 
         int m = numSplits;
-        int d = 0;
+        int d = 0; //number of digits necessary
         while( m >  0 ){
           m = numSplits / 10;
           d += 1;
@@ -654,16 +654,16 @@ public class PartUtils {
     }
 
     // --- write the final index -----------------------------------------------
-
     for( String k : aParts.keySet() ){
       try(  BufferedWriter bw = new BufferedWriter( new FileWriter( new File( outputDir, k ) ) ) ) {
-        for( Record r :aParts.get(k )) {
+        for( Record r : aParts.get(k )) {
           bw.write(format("%s%n", r.toString( separator )));
         }
       }
     }
 
     // --- check split dimensions ----------------------------------------------
+
 
     final File[] partitions = outputDir.listFiles();
     for( File p : partitions ) {
