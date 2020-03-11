@@ -1,7 +1,5 @@
 package it.univr.veronacard.hadoop.conf;
 
-import it.univr.veronacard.hadoop.mapreduce.PartitionTechnique;
-
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
 

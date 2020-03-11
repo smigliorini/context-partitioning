@@ -1,4 +1,6 @@
 package it.univr.veronacard.hadoop.input;
 
-public class VeronaCardCSVInputFormat {
+import org.apache.hadoop.mapreduce.InputFormat;
+
+public class VeronaCardCSVInputFormat extends CSVInputFormat {
 }

@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-
-
 <configuration>
     <splitSizes>
         <entry>
@@ -8,7 +6,7 @@
             <value>1048576</value>   <!--1024 * 1024-->
         </entry>
         <entry>
-            <key>DL_GRID</key>
+            <key>MD_GRID</key>
             <value>1048576</value>   <!--1024 * 1024-->
         </entry>
         <entry>

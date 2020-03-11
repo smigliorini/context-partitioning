@@ -1,4 +1,4 @@
-package it.univr.veronacard.hadoop.mapreduce;
+package it.univr.veronacard.hadoop.conf;
 
 
 public enum PartitionTechnique {
