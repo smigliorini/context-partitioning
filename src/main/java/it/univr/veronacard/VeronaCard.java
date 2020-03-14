@@ -1,4 +1,6 @@
-package it.univr.veronacard.partitioning;
+package it.univr.veronacard;
+
+import java.util.Objects;
 
 /**
  * MISSING_COMMENT
@@ -6,16 +8,16 @@ package it.univr.veronacard.partitioning;
  * @author Mauro Gambini, Sara Migliorini
  * @version 0.0.0
  */
-public class Record {
+public class VeronaCard {
 
-  private String vcSerial;
-  private Double x;
-  private Double y;
-  private Long time;
-  private String poiName;
-  private Integer age;
+  protected String vcSerial;
+  protected Double x;
+  protected Double y;
+  protected Long time;
+  protected String poiName;
+  protected Integer age;
 
-  public Record() {
+  public VeronaCard() {
     vcSerial = null;
     x = null;
     y = null;
@@ -86,5 +88,21 @@ public class Record {
     sb.append( separator );
     sb.append( age );
     return sb.toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof VeronaCard)) return false;
+    VeronaCard that = (VeronaCard) o;
+    return Objects.equals(vcSerial, that.vcSerial) &&
+            Objects.equals(x, that.x) &&
+            Objects.equals(y, that.y) &&
+            Objects.equals(time, that.time);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(vcSerial, x, y, time);
   }
 }

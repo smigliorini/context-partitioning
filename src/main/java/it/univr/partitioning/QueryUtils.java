@@ -1,4 +1,6 @@
-package it.univr.veronacard.partitioning;
+package it.univr.partitioning;
+
+import it.univr.veronacard.VeronaCard;
 
 import java.io.File;
 import java.util.HashSet;
@@ -65,7 +67,7 @@ public class QueryUtils {
       while( it.hasNext() && !found ) {
         final String l = it.next();
 
-        final Record r = DataUtils.parseRecord(l, separator);
+        final VeronaCard r = DataUtils.parseRecord(l, separator);
         if (r.getX() == null || r.getY() == null || r.getTime() == null || r.getAge() == null) {
           System.out.printf("Parse null values!!!");
         }

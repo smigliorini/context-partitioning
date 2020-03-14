@@ -1,4 +1,4 @@
-package it.univr.veronacard.partitioning;
+package it.univr.partitioning;
 
 /**
  * MISSING_COMMENT

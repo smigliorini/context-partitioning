@@ -1,4 +1,4 @@
-package it.univr.veronacard.partitioning;
+package it.univr.partitioning;
 
 import java.io.BufferedReader;
 import java.io.File;

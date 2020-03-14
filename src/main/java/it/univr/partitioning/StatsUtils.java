@@ -1,4 +1,4 @@
-package it.univr.veronacard.partitioning;
+package it.univr.partitioning;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import static it.univr.veronacard.partitioning.FileUtils.readLines;
+import static it.univr.partitioning.FileUtils.readLines;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;

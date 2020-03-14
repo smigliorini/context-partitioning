@@ -1,4 +1,4 @@
-package it.univr.veronacard.hadoop.input;
+package it.univr.hadoop.input;
 
 import org.apache.hadoop.io.Writable;
 
@@ -6,7 +6,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public abstract class CSVWritable implements Writable, TextSerialible {
+public abstract class CSVWritable implements Writable, TextSerializable {
 
     @Override
     public void write(DataOutput out) throws IOException {

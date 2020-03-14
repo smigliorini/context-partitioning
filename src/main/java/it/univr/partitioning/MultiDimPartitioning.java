@@ -1,16 +1,18 @@
-package it.univr.veronacard.partitioning;
+package it.univr.partitioning;
+
+import it.univr.veronacard.VeronaCard;
 
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static it.univr.veronacard.partitioning.DataUtils.*;
-import static it.univr.veronacard.partitioning.FileUtils.printSize;
-import static it.univr.veronacard.partitioning.FileUtils.readLines;
-import static it.univr.veronacard.partitioning.PartUtils.*;
-import static it.univr.veronacard.partitioning.QueryUtils.rangeContextQuery;
-import static it.univr.veronacard.partitioning.StatsUtils.buildStatFile;
+import static it.univr.partitioning.DataUtils.*;
+import static it.univr.partitioning.FileUtils.printSize;
+import static it.univr.partitioning.FileUtils.readLines;
+import static it.univr.partitioning.PartUtils.*;
+import static it.univr.partitioning.QueryUtils.rangeContextQuery;
+import static it.univr.partitioning.StatsUtils.buildStatFile;
 
 /**
  * MISSING_COMMENT
@@ -127,10 +129,10 @@ public class MultiDimPartitioning {
 
     final File input = new File( dataDir, outFile );
     final List<String> lines = readLines( input, false );
-    final List<Record> records = parseRecords( lines, separator );
+    final List<VeronaCard> records = parseRecords( lines, separator );
 
     final Map<Integer,Integer> result = new HashMap<>();
-    for( Record r : records ){
+    for( VeronaCard r : records ){
       final int k = r.getAge() / 10;
       Integer v = result.get( k );
       if( v == null ){

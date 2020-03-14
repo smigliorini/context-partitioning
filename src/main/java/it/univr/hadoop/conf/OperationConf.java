@@ -1,4 +1,4 @@
-package it.univr.veronacard.hadoop.conf;
+package it.univr.hadoop.conf;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -90,4 +90,20 @@ public class OperationConf extends Configuration {
         return true;
     }
 
+    public Optional<HContexBasedConf> getHContextBasedConf() {
+        return hContextBasedConf;
+    }
+
+    public Vector<Path> getFileInputPaths() {
+        return new Vector<>(filePaths.subList(0, filePaths.size()-1));
+    }
+
+    public Path getOutputPath() {
+        return filePaths.get(filePaths.size()-1);
+    }
+
+
+    public PartitionTechnique getTechnique() {
+        return technique;
+    }
 }

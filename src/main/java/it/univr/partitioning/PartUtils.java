@@ -1,4 +1,6 @@
-package it.univr.veronacard.partitioning;
+package it.univr.partitioning;
+
+import it.univr.veronacard.VeronaCard;
 
 import java.io.*;
 import java.util.*;
@@ -59,11 +61,11 @@ public class PartUtils {
     }
 
     final List<String> lines = FileUtils.readLines( input, false );
-    final List<Record> records = DataUtils.parseRecords( lines, separator );
+    final List<VeronaCard> records = DataUtils.parseRecords( lines, separator );
     final String partTemplate = "%s%s-%s-%s-%s";
-    final Map<String,List<Record>> result = new HashMap<>();
+    final Map<String,List<VeronaCard>> result = new HashMap<>();
 
-    for( Record r : records ){
+    for( VeronaCard r : records ){
       int t = -1;
       int i = 1;
       while( i < timeSplits.length && t == - 1 ){
@@ -113,7 +115,7 @@ public class PartUtils {
       }
 
       final String key = format( partTemplate, partPrefix, t, x, y, age );
-      List<Record> list = result.get( key );
+      List<VeronaCard> list = result.get( key );
       if (list == null) {
         list = new ArrayList<>();
       }
@@ -125,7 +127,7 @@ public class PartUtils {
 
     for( String k : result.keySet() ){
       try(  BufferedWriter bw = new BufferedWriter( new FileWriter( new File( outputDir, k ) ) ) ) {
-        for( Record r : result.get(k )) {
+        for( VeronaCard r : result.get(k )) {
           bw.write(format("%s%n", r.toString( separator )));
         }
       }
@@ -323,7 +325,7 @@ public class PartUtils {
 
         String line;
         while( ( line = br.readLine() ) != null ) {
-          final Record r = DataUtils.parseRecord( line, separator );
+          final VeronaCard r = DataUtils.parseRecord( line, separator );
 
           // the cell index is given by the integer part except for the max boundary
           final int xPart;
@@ -503,14 +505,14 @@ public class PartUtils {
     // --- assign the grid keys and save a temporary file ----------------------
 
     final List<String> lines = FileUtils.readLines( input, false );
-    final List<Record> records = DataUtils.parseRecords( lines, separator );
+    final List<VeronaCard> records = DataUtils.parseRecords( lines, separator );
 
     // first level => time
     final double widthSidePartT = ((double)( boundaries.getMaxT() - boundaries.getMinT() )) / numCellPerSide;
     final String tPartTemplate = partPrefix + tFormat;
-    final Map<String,List<Record>> tParts = new HashMap<>();
+    final Map<String,List<VeronaCard>> tParts = new HashMap<>();
 
-    for( Record r : records ){
+    for( VeronaCard r : records ){
       if( r.getTime() != null ) {
         // the cell index is given by the integer part except for the max boundary
         final int tPart;
@@ -519,7 +521,7 @@ public class PartUtils {
         } else {
           tPart = (int) ( ( r.getTime() - boundaries.getMinT() ) / widthSidePartT );
         }
-        List<Record> elements = tParts.get( format( tPartTemplate, tPart ) );
+        List<VeronaCard> elements = tParts.get( format( tPartTemplate, tPart ) );
         if( elements == null ){
           elements = new ArrayList<>();
         }
@@ -530,14 +532,14 @@ public class PartUtils {
 
     // second level => x
     final String xPartTemplate =  "%s-" + xFormat;
-    final Map<String,List<Record>> xParts = new HashMap<>();
+    final Map<String,List<VeronaCard>> xParts = new HashMap<>();
 
     for( String k : tParts.keySet() ) {
       double minX = MAX_VALUE;
       double maxX = MIN_VALUE;
 
       // find the x-boundary of the t-split
-      for( Record r : tParts.get(k) ) {
+      for( VeronaCard r : tParts.get(k) ) {
         minX = min(minX, r.getX());
         maxX = max(maxX, r.getX());
       }//*/
@@ -547,7 +549,7 @@ public class PartUtils {
 
       final double widthSidePartX = ( maxX - minX ) / numCellPerSide;
 
-      for( Record r : tParts.get( k )) {
+      for( VeronaCard r : tParts.get( k )) {
         // for each temporal split
         if (r.getX() != null) {
           // the cell index is given by the integer part except for the max boundary
@@ -559,7 +561,7 @@ public class PartUtils {
             xPart = (int) ((r.getX() - minX) / widthSidePartX);
           }
 
-          List<Record> elements = xParts.get(format(xPartTemplate, k, xPart));
+          List<VeronaCard> elements = xParts.get(format(xPartTemplate, k, xPart));
           if (elements == null) {
             elements = new ArrayList<>();
           }
@@ -571,14 +573,14 @@ public class PartUtils {
 
     // third level => y
     final String yPartTemplate =  "%s-" + yFormat;
-    final Map<String,List<Record>> yParts = new HashMap<>();
+    final Map<String,List<VeronaCard>> yParts = new HashMap<>();
 
     for( String k : xParts.keySet() ) {
       double minY = MAX_VALUE;
       double maxY = MIN_VALUE;
 
       // find the x-boundary of the t-split
-      for( Record r : xParts.get(k) ) {
+      for( VeronaCard r : xParts.get(k) ) {
         minY = min(minY, r.getY());
         maxY = max(maxY, r.getY());
       }//*/
@@ -588,7 +590,7 @@ public class PartUtils {
 
       final double widthSidePartY = ( maxY - minY ) / numCellPerSide;
 
-      for( Record r : xParts.get( k )) {
+      for( VeronaCard r : xParts.get( k )) {
         // for each temporal split
         if (r.getY() != null) {
           // int yPart = (int) ((r.getY() - minY) / widthSidePartY);
@@ -601,7 +603,7 @@ public class PartUtils {
             yPart = (int) ((r.getY() - minY) / widthSidePartY);
           }
 
-          List<Record> elements = yParts.get(format(yPartTemplate, k, yPart));
+          List<VeronaCard> elements = yParts.get(format(yPartTemplate, k, yPart));
           if (elements == null) {
             elements = new ArrayList<>();
           }
@@ -613,14 +615,14 @@ public class PartUtils {
 
     // fourth level => age
     final String aPartTemplate =  "%s-" + aFormat;
-    final Map<String,List<Record>> aParts = new HashMap<>();
+    final Map<String,List<VeronaCard>> aParts = new HashMap<>();
 
     for( String k : yParts.keySet() ) {
       double minA = MAX_VALUE;
       double maxA = MIN_VALUE;
 
       // find the x-boundary of the t-split
-      for( Record r : yParts.get(k) ) {
+      for( VeronaCard r : yParts.get(k) ) {
         minA = min(minA, r.getAge());
         maxA = max(maxA, r.getAge());
       }//*/
@@ -630,7 +632,7 @@ public class PartUtils {
 
       final double widthSidePartA = ( maxA - minA ) / numCellPerSide;
 
-      for( Record r : yParts.get( k )) {
+      for( VeronaCard r : yParts.get( k )) {
         // for each temporal split
         if (r.getAge() != null) {
           //int aPart = (int) ((r.getAge() - minA) / widthSidePartA );
@@ -643,7 +645,7 @@ public class PartUtils {
             aPart = (int) ((r.getAge() - minA) / widthSidePartA );
           }
 
-          List<Record> elements = aParts.get(format(aPartTemplate, k, aPart));
+          List<VeronaCard> elements = aParts.get(format(aPartTemplate, k, aPart));
           if (elements == null) {
             elements = new ArrayList<>();
           }
@@ -656,7 +658,7 @@ public class PartUtils {
     // --- write the final index -----------------------------------------------
     for( String k : aParts.keySet() ){
       try(  BufferedWriter bw = new BufferedWriter( new FileWriter( new File( outputDir, k ) ) ) ) {
-        for( Record r : aParts.get(k )) {
+        for( VeronaCard r : aParts.get(k )) {
           bw.write(format("%s%n", r.toString( separator )));
         }
       }

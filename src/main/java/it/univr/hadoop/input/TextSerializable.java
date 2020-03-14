@@ -1,8 +1,8 @@
-package it.univr.veronacard.hadoop.input;
+package it.univr.hadoop.input;
 
 import org.apache.hadoop.io.Text;
 
-public interface TextSerialible {
+public interface TextSerializable {
 
     /**
      * Store current object as string in the given text appending text already there.

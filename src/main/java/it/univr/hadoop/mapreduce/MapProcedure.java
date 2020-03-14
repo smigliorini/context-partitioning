@@ -1,4 +1,4 @@
-package it.univr.veronacard.hadoop.mapreduce;
+package it.univr.hadoop.mapreduce;
 
 import org.apache.hadoop.mapreduce.Mapper;
 

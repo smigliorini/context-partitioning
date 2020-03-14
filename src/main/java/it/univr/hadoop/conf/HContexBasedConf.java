@@ -1,4 +1,4 @@
-package it.univr.veronacard.hadoop.conf;
+package it.univr.hadoop.conf;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
@@ -6,21 +6,21 @@ import java.util.HashMap;
 @XmlRootElement(name = "configuration")
 public class HContexBasedConf {
 
-    private HashMap<PartitionTechnique, Integer> splitSizes;
+    private HashMap<PartitionTechnique, Long> splitSizes;
 
     public HContexBasedConf () {
         super();
     }
 
-    public HashMap<PartitionTechnique, Integer> getSplitSizes() {
+    public HashMap<PartitionTechnique, Long> getSplitSizes() {
         return splitSizes;
     }
 
-    public void setSplitSizes(HashMap<PartitionTechnique, Integer> splitSizes) {
+    public void setSplitSizes(HashMap<PartitionTechnique, Long> splitSizes) {
         this.splitSizes = splitSizes;
     }
 
-    public Integer getSplitSize(PartitionTechnique partitionTechnique) {
+    public Long getSplitSize(PartitionTechnique partitionTechnique) {
         return splitSizes.get(partitionTechnique);
     }
 
