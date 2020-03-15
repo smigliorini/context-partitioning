@@ -8,7 +8,7 @@ import java.util.Objects;
  * @author Mauro Gambini, Sara Migliorini
  * @version 0.0.0
  */
-public class VeronaCard {
+public class VeronaCardRecord {
 
   protected String vcSerial;
   protected Double x;
@@ -17,7 +17,7 @@ public class VeronaCard {
   protected String poiName;
   protected Integer age;
 
-  public VeronaCard() {
+  public VeronaCardRecord() {
     vcSerial = null;
     x = null;
     y = null;
@@ -25,6 +25,21 @@ public class VeronaCard {
     poiName = null;
     age = null;
   }
+
+  public VeronaCardRecord(String vcSerial, Double x, Double y, Long time, String poiName, Integer age) {
+    vcSerial = null;
+    x = null;
+    y = null;
+    time = null;
+    poiName = null;
+    age = null;
+  }
+
+  public VeronaCardRecord(VeronaCardRecord veronaCardRecord) {
+    this(veronaCardRecord.getVcSerial(), veronaCardRecord.getX(), veronaCardRecord.getY(), veronaCardRecord.getTime(), veronaCardRecord.getPoiName(),
+            veronaCardRecord.getAge());
+  }
+
 
   public String getVcSerial() {
     return vcSerial;
@@ -93,8 +108,8 @@ public class VeronaCard {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof VeronaCard)) return false;
-    VeronaCard that = (VeronaCard) o;
+    if (!(o instanceof VeronaCardRecord)) return false;
+    VeronaCardRecord that = (VeronaCardRecord) o;
     return Objects.equals(vcSerial, that.vcSerial) &&
             Objects.equals(x, that.x) &&
             Objects.equals(y, that.y) &&

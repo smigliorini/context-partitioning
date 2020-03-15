@@ -6,7 +6,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public abstract class CSVWritable implements Writable, TextSerializable {
+public abstract class CSVWritable implements Writable {
 
     @Override
     public void write(DataOutput out) throws IOException {

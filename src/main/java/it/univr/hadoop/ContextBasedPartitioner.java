@@ -43,9 +43,8 @@ public class ContextBasedPartitioner {
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);
         VeronaCardCSVInputFormat.setInputPaths(job, inputPaths);
+
         //output
-
-
         job.waitForCompletion(true);
         Counters counters = job.getCounters();
         Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);

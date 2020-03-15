@@ -3,7 +3,7 @@ package it.univr.partitioning;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import it.univr.veronacard.VeronaCard;
+import it.univr.veronacard.VeronaCardRecord;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -382,7 +382,7 @@ public class DataUtils {
    * @return
    */
 
-  public static List<VeronaCard> parseRecords(List<String> lines, String separator ){
+  public static List<VeronaCardRecord> parseRecords(List<String> lines, String separator ){
     if( lines == null ){
       throw new NullPointerException();
     }
@@ -390,7 +390,7 @@ public class DataUtils {
       throw new NullPointerException();
     }
 
-    final List<VeronaCard> records = new ArrayList<VeronaCard>();
+    final List<VeronaCardRecord> records = new ArrayList<VeronaCardRecord>();
     for( String l : lines ){
       records.add( parseRecord( l, separator ) );
     }
@@ -405,7 +405,7 @@ public class DataUtils {
    * @return
    */
 
-  public static VeronaCard parseRecord(String line, String separator ) {
+  public static VeronaCardRecord parseRecord(String line, String separator ) {
     if( line == null ) {
       throw new NullPointerException();
     }
@@ -413,7 +413,7 @@ public class DataUtils {
       throw new NullPointerException();
     }
 
-    final VeronaCard r = new VeronaCard();
+    final VeronaCardRecord r = new VeronaCardRecord();
 
     final StringTokenizer tk = new StringTokenizer( line, separator );
     int i = 0;

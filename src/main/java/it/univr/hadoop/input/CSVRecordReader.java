@@ -1,7 +1,6 @@
 package it.univr.hadoop.input;
 
 import org.apache.commons.math3.util.Pair;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -12,10 +11,9 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.util.LineReader;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+
 
 public abstract class CSVRecordReader<K, V> extends RecordReader<K, V> {
 
@@ -92,7 +90,7 @@ public abstract class CSVRecordReader<K, V> extends RecordReader<K, V> {
     public float getProgress() throws IOException, InterruptedException {
         if(start == end )
             return 0f;
-        return Math.min(1.0f, (pos - start) / (float))
+        return Math.min(1.0f, (pos - start) / (float) (end - start));
     }
 
     @Override

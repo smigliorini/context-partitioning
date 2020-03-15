@@ -1,6 +1,6 @@
 package it.univr.partitioning;
 
-import it.univr.veronacard.VeronaCard;
+import it.univr.veronacard.VeronaCardRecord;
 
 import java.io.*;
 import java.text.ParseException;
@@ -129,10 +129,10 @@ public class MultiDimPartitioning {
 
     final File input = new File( dataDir, outFile );
     final List<String> lines = readLines( input, false );
-    final List<VeronaCard> records = parseRecords( lines, separator );
+    final List<VeronaCardRecord> records = parseRecords( lines, separator );
 
     final Map<Integer,Integer> result = new HashMap<>();
-    for( VeronaCard r : records ){
+    for( VeronaCardRecord r : records ){
       final int k = r.getAge() / 10;
       Integer v = result.get( k );
       if( v == null ){
