@@ -1,5 +1,6 @@
 package it.univr.hadoop.conf;
 
+import it.univr.hadoop.ContextData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -24,6 +25,8 @@ public class OperationConf extends Configuration {
     public Optional<HContexBasedConf> hContextBasedConf;
     public Vector<Path> filePaths;
     public PartitionTechnique technique;
+    public ContextData mbrContextData;
+
 
     public OperationConf(GenericOptionsParser genericOptionsParser) {
         super(genericOptionsParser.getConfiguration());
@@ -42,7 +45,7 @@ public class OperationConf extends Configuration {
         }
 
         filePaths = new Vector(Stream.of(args)
-                .filter(s -> s.contains("//"))
+                .filter(s -> s.contains("/") || s.contains("\\"))
                 .map(s -> new Path(s))
                 .collect(Collectors.toList()));
 
@@ -65,7 +68,7 @@ public class OperationConf extends Configuration {
             try {
                 FileSystem fs = path.getFileSystem(this);
                 if(fs.exists(path)) {
-                    Path directory = fs.getHomeDirectory();
+                    Path directory = path.getParent();
                     LOGGER.warn(format("The output directory is not present, a default one has been added in to %s",
                             directory.getName()));
                     filePaths.add(filePaths.size()-1, directory);
@@ -102,8 +105,11 @@ public class OperationConf extends Configuration {
         return filePaths.get(filePaths.size()-1);
     }
 
-
     public PartitionTechnique getTechnique() {
         return technique;
     }
+
+    public ContextData getMbrContextData() {return mbrContextData;}
+
+    public void setMbrContextData(ContextData mbrContextData) { this.mbrContextData = mbrContextData;}
 }

@@ -3,3 +3,5 @@ test/**
 .idea/
 target/
 *.iml
+src/main/java/META-INF/
+out/

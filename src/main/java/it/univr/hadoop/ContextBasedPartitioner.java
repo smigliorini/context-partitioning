@@ -2,6 +2,8 @@ package it.univr.hadoop;
 
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
+import it.univr.veronacard.VeronaCardRecord;
+import it.univr.veronacard.VeronaCardWritable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -17,6 +19,7 @@ public class ContextBasedPartitioner {
 
     public static void main (String args[]) throws IOException, InterruptedException, ClassNotFoundException {
         OperationConf configuration = new OperationConf(new GenericOptionsParser(args));
+
         if(!configuration.validInputOutputFiles()) {
             LOGGER.error("Invalid input files");
             System.exit(1);
@@ -39,6 +42,8 @@ public class ContextBasedPartitioner {
         });
 
         //input
+        //TODO: give the input format as parameter, to make it more abstracted
+        config.mbrContextData = new VeronaCardWritable();
         job.setInputFormatClass(VeronaCardCSVInputFormat.class);
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);

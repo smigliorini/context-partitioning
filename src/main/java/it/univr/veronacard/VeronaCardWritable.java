@@ -28,13 +28,12 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
 
     @Override
     public int compareTo(ContextData o) {
-        //draft sort
+        //TODO Do we need a sort algorithm?
         VeronaCardRecord veronaCardRecord = (VeronaCardRecord) o;
         if(this.time < veronaCardRecord.time)
             return -1;
         if(this.time > veronaCardRecord.time)
             return 1;
-
         if(this.x < veronaCardRecord.x)
             return 1;
         if(this.x > veronaCardRecord.x)
