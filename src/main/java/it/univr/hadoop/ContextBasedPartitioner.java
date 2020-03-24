@@ -7,6 +7,8 @@ import it.univr.veronacard.VeronaCardWritable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -50,6 +52,10 @@ public class ContextBasedPartitioner {
         VeronaCardCSVInputFormat.setInputPaths(job, inputPaths);
 
         //output
+        job.setOutputFormatClass(TextOutputFormat.class);
+        FileOutputFormat.setOutputPath(job, config.getOutputPath());
+
+        //job
         job.waitForCompletion(true);
         Counters counters = job.getCounters();
         Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);

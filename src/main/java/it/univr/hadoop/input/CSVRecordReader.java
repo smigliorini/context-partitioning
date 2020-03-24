@@ -5,6 +5,8 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -15,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public abstract class CSVRecordReader<K, V> extends RecordReader<K, V> {
+public abstract class CSVRecordReader<K extends WritableComparable, V extends Writable> extends RecordReader<K, V> {
 
     public static final String DEFAULT_DELIMITER = "\"";
     public static final String DEFAULT_SEPARATOR = ",";
@@ -62,7 +64,7 @@ public abstract class CSVRecordReader<K, V> extends RecordReader<K, V> {
     public boolean nextKeyValue() throws IOException, InterruptedException {
         Text text = new Text();
         int size = lineReader.readLine(text);
-        if(size >= 0) {
+        if(size > 0) {
             Pair<K, V> tuple = parseLine(text.toString());
             key = tuple.getKey();
             value = tuple.getValue();

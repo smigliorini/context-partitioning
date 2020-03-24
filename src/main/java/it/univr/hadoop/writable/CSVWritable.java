@@ -1,4 +1,4 @@
-package it.univr.hadoop.input;
+package it.univr.hadoop.writable;
 
 import org.apache.hadoop.io.Writable;
 

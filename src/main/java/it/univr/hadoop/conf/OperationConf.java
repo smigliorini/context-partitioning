@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Vector;
@@ -68,10 +69,11 @@ public class OperationConf extends Configuration {
             try {
                 FileSystem fs = path.getFileSystem(this);
                 if(fs.exists(path)) {
-                    Path directory = path.getParent();
+
+                    Path directory = new Path(path.getParent().toString()+File.separator +"out");
                     LOGGER.warn(format("The output directory is not present, a default one has been added in to %s",
                             directory.getName()));
-                    filePaths.add(filePaths.size()-1, directory);
+                    filePaths.add(filePaths.size(), directory);
                 } else {
                     return false;
                 }

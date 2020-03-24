@@ -4,12 +4,17 @@ import it.univr.hadoop.conf.OperationConf;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
 import it.univr.veronacard.VeronaCardWritable;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.ObjectWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -21,7 +26,6 @@ import java.io.IOException;
  */
 public class MBBoxMapReduce {
     static final Logger LOGGER = LogManager.getLogger(MBBoxMapReduce.class);
-
 
     public static void main (String... args) throws IOException, InterruptedException, ClassNotFoundException {
         OperationConf configuration = new OperationConf(new GenericOptionsParser(args));
@@ -35,7 +39,7 @@ public class MBBoxMapReduce {
         configuration.getFileInputPaths().toArray(inputPaths);
 
         Job job = Job.getInstance(configuration, "MBBoxMapReduce");
-        //TO REMOVE
+        //TO REMOVE AFTER TEST
         configuration.mbrContextData = new VeronaCardWritable();
         configuration.hContextBasedConf.ifPresent(customConf -> {
             FileInputFormat.setMinInputSplitSize(job, customConf.getSplitSize(configuration.technique));
@@ -54,19 +58,21 @@ public class MBBoxMapReduce {
         if(job == null)
             job = Job.getInstance(config, "MBBoxMapReduce");
 
-        job.setInputFormatClass(VeronaCardCSVInputFormat.class);
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);
-        VeronaCardCSVInputFormat.setInputPaths(job, inputPaths);
 
         job.setMapperClass(MBBoxMapper.class);
-        job.setCombinerClass(MBBoxReducer.MBBoxCombiner.class);
+        job.setMapOutputKeyClass(Text.class);
+        //TODO make it generic
+        job.setMapOutputValueClass(ObjectWritable.class);
+        job.setCombinerClass(MBBoxCombiner.class);
         job.setReducerClass(MBBoxReducer.class);
 
         //TODO: give the input format as parameter, to make it more abstracted
         job.setInputFormatClass(VeronaCardCSVInputFormat.class);
         VeronaCardCSVInputFormat.setInputPaths(job, inputPaths);
-        job.setOutputFormatClass(NullOutputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+        FileOutputFormat.setOutputPath(job, config.getOutputPath());
 
         //output
         job.waitForCompletion(true);

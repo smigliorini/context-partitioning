@@ -62,7 +62,20 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
     }
 
     @Override
+    public boolean equals(Object o) {
+        //TODO related to hashcode
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        //TODO Read documentation Hadoop about hash calculation
+        return super.hashCode();
+    }
+
+    @Override
     protected VeronaCardWritable clone(){
         return new VeronaCardWritable(this);
     }
+
 }

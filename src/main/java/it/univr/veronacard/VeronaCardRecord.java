@@ -27,12 +27,12 @@ public class VeronaCardRecord {
   }
 
   public VeronaCardRecord(String vcSerial, Double x, Double y, Long time, String poiName, Integer age) {
-    vcSerial = null;
-    x = null;
-    y = null;
-    time = null;
-    poiName = null;
-    age = null;
+    this.vcSerial = vcSerial;
+    this.x = x;
+    this.y = y;
+    this.time = time;
+    this.poiName = poiName;
+    this.age = age;
   }
 
   public VeronaCardRecord(VeronaCardRecord veronaCardRecord) {
@@ -119,5 +119,24 @@ public class VeronaCardRecord {
   @Override
   public int hashCode() {
     return Objects.hash(vcSerial, x, y, time);
+  }
+
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(vcSerial);
+    builder.append(" ");
+    builder.append(x);
+    builder.append(" ");
+    builder.append(y);
+    builder.append(" ");
+    builder.append(time);
+    builder.append(" ");
+    builder.append(poiName);
+    builder.append(" ");
+    builder.append(age);
+    return builder.toString();
+
   }
 }
