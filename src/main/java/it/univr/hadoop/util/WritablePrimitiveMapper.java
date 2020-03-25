@@ -38,7 +38,22 @@ public class WritablePrimitiveMapper {
             return ((FloatWritable) value).get();
         if(value instanceof DoubleWritable)
             return ((DoubleWritable) value).get();
+        return null;
+    }
 
+    public static Object getBeanObjectFromText(Text value, Class clazz) {
+        if(clazz.isAssignableFrom(Boolean.class))
+            return Boolean.valueOf(value.toString());
+        if (clazz.isAssignableFrom(Integer.class))
+            return Integer.valueOf(value.toString());
+        if(clazz.isAssignableFrom(Short.class))
+            return Short.valueOf(value.toString());
+        if(clazz.isAssignableFrom(Long.class))
+            return Long.valueOf(value.toString());
+        if(clazz.isAssignableFrom(Float.class))
+            return Float.valueOf(value.toString());
+        if(clazz.isAssignableFrom(Double.class) )
+            return Double.valueOf(value.toString());
         return null;
     }
 

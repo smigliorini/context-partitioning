@@ -42,8 +42,6 @@ public class MBBoxMapper extends Mapper<LongWritable, ContextData, Text, ObjectW
                     } else {
                         mapValue = WritablePrimitiveMapper.getPrimitiveWritable(propertyValue);
                     }
-                    //LOGGER.warn("Class type is " + mapValue.getClass().getSimpleName());
-                    //LOGGER.info(format("Field name %s value %s", fieldName, value.toString()));
                     context.write(new Text(fieldName), new ObjectWritable(mapValue));
                 }
             } catch (IllegalAccessException | IntrospectionException | InvocationTargetException e) {
