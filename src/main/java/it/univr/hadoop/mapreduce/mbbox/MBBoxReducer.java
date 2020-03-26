@@ -32,23 +32,6 @@ public class MBBoxReducer extends Reducer<Text, ObjectWritable, Writable, Writab
 
 
         if(max.isPresent()) {
-            /*Cluster cluster = new Cluster(context.getConfiguration());
-            Job job = cluster.getJob(context.getJobID());
-            if(job == null)
-                LOGGER.warn("JOB is null");
-            ContextData mbrContextData = ((OperationConf) job.getConfiguration()).getMbrContextData();
-            WritableComparable writableComparable = max.get();
-            try {
-                PropertyDescriptor descriptor = new PropertyDescriptor(key.toString(), mbrContextData.getClass());
-                Object value = writableComparable;
-                if(!WritableComparable.class.isAssignableFrom(descriptor.getPropertyEditorClass()))
-                    value = WritablePrimitiveMapper.getBeanFromWritable(writableComparable);
-                descriptor.getWriteMethod().invoke(value);
-            } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
-                LOGGER.error("Field not found or incompatible value");
-                e.printStackTrace();
-            }
-            context.write(NullWritable.get(), NullWritable.get());*/
             context.write(key, max.get());
         }
     }
