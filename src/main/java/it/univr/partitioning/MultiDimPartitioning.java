@@ -25,7 +25,7 @@ public class MultiDimPartitioning {
   //private static final String dataDir = "C:\\workspace\\projects\\veronacard_analysis\\test\\test_partitioning\\";
   private static final String dataDir = "/home/sangra/Documenti/UniVr/Tirocinio/veronacard/test/test_partitioning/";
   //private static final String dataDir = "/workspace/projects/veronacard/test/test_partitioning/";
-  private static final String dataFile = "vc_tmp.csv.csv";
+  private static final String dataFile = "vc_ticket_space_time_transf.csv";
   private static final String outFile = "vc_ticket_space_time_transf.csv";
   private static final String fractalFile = "vc_ticket_space_time_fractal.csv";
 

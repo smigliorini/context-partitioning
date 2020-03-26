@@ -5,3 +5,4 @@ target/
 *.iml
 src/main/java/META-INF/
 out/
+dependency-reduced-pom.xml
