@@ -4,7 +4,6 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
-import it.univr.veronacard.VeronaCardWritable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -27,6 +26,8 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 import static java.lang.String.format;
 
@@ -44,67 +45,93 @@ public class MBBoxMapReduce {
         }
         Path[] inputPaths = new Path[configuration.getFileInputPaths().size()];
         configuration.getFileInputPaths().toArray(inputPaths);
-        fileMBBoxMapReduce(configuration, true);
+        runMBBoxMapReduce(configuration, VeronaCardCSVInputFormat.class,true);
     }
 
-    public static void fileMBBoxMapReduce(OperationConf config, boolean storeResult) throws IOException, ClassNotFoundException, InterruptedException {
+    /**
+     * Retrieve Minimum bounding box of the data, by returning a context place holder for minimum bound values.
+     * The return value is a context data schema which is equal to the value genetic class of the FileInputFormat class
+     * passed as argument.
+     * @param config
+     * @param inputFormatClass
+     * @param storeResult
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     */
+    public static ContextData runMBBoxMapReduce(OperationConf config, Class< ? extends FileInputFormat> inputFormatClass, boolean storeResult) throws IOException, ClassNotFoundException, InterruptedException {
         Job job = Job.getInstance(config, "MBBoxMapReduce");
-        config.mbrContextData = new VeronaCardWritable();
         config.hContextBasedConf.ifPresent(customConf -> {
             FileInputFormat.setMinInputSplitSize(job, customConf.getSplitSize(config.technique));
             FileInputFormat.setMaxInputSplitSize(job, customConf.getSplitSize(config.technique));
         });
-        if(storeResult)
+        if (storeResult) {
             job.setJarByClass(MBBoxMapReduce.class);
+        }
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);
 
         job.setMapperClass(MBBoxMapper.class);
         job.setMapOutputKeyClass(Text.class);
-        //TODO make it generic
         job.setMapOutputValueClass(ObjectWritable.class);
         job.setCombinerClass(MBBoxCombiner.class);
         job.setReducerClass(MBBoxReducer.class);
 
-        //TODO: give the input format as parameter, to make it more abstracted
-        job.setInputFormatClass(VeronaCardCSVInputFormat.class);
-        VeronaCardCSVInputFormat.setInputPaths(job, inputPaths);
-        job.setOutputFormatClass(TextOutputFormat.class);
-        FileOutputFormat.setOutputPath(job, config.getOutputPath());
+        ContextData contextData = null;
+        job.setInputFormatClass(inputFormatClass);
+        Type genericSuperclass = inputFormatClass.getGenericSuperclass();
 
-        //output
-        job.waitForCompletion(true);
-        Counters counters = job.getCounters();
-        Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);
-        outputRecordCounter.getValue();
-        ContextData mbrContextData = config.getMbrContextData();
-        FileSystem fileSystem = FileSystem.get(config);
-        for (FileStatus fileStatus : fileSystem.listStatus(config.getOutputPath())) {
-            if(!fileStatus.isDirectory()) {
-                KeyValueLineRecordReader reader = new KeyValueLineRecordReader(config,
-                        new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
-                Text key = reader.createKey();
-                Text value = reader.createValue();
-                while (reader.next(key, value)) {
-                    try {
-                        PropertyDescriptor descriptor = new PropertyDescriptor(key.toString(),
-                                mbrContextData.getClass());
-                        Object propertyValue = WritablePrimitiveMapper.getBeanObjectFromText(value, descriptor.getPropertyType());
-                        descriptor.getWriteMethod().invoke(mbrContextData, propertyValue);
-                        LOGGER.info(format("MBR output field: %s, value %s", key, value));
-                    } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
-                        e.printStackTrace();
-                    }
-                }
-                reader.close();
+        //Retrieve InputFormat information to process the data and return a Context data value holder of the range.
+        ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+        Type[] actualTypeArgument = parameterizedType.getActualTypeArguments();
+        Type type = actualTypeArgument[1];
+        if (ContextData.class.isAssignableFrom((Class<?>) type)) {
+            Class<? extends ContextData> valueClass = (Class<? extends ContextData>) type;
+            try {
+                contextData = valueClass.getConstructor().newInstance();
+            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                e.printStackTrace();
             }
+
+            FileInputFormat.setInputPaths(job, inputPaths);
+            job.setOutputFormatClass(TextOutputFormat.class);
+            FileOutputFormat.setOutputPath(job, config.getOutputPath());
+
+            //output
+            job.waitForCompletion(true);
+            Counters counters = job.getCounters();
+            Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);
+            outputRecordCounter.getValue();
+            ContextData mbrContextData = contextData;
+            FileSystem fileSystem = FileSystem.get(config);
+            for (FileStatus fileStatus : fileSystem.listStatus(config.getOutputPath())) {
+                if (!fileStatus.isDirectory()) {
+                    KeyValueLineRecordReader reader = new KeyValueLineRecordReader(config,
+                            new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
+                    Text key = reader.createKey();
+                    Text value = reader.createValue();
+                    while (reader.next(key, value)) {
+                        try {
+                            PropertyDescriptor descriptor = new PropertyDescriptor(key.toString(),
+                                    mbrContextData.getClass());
+                            Object propertyValue = WritablePrimitiveMapper.getBeanObjectFromText(value, descriptor.getPropertyType());
+                            descriptor.getWriteMethod().invoke(mbrContextData, propertyValue);
+                            LOGGER.info(format("MBR output field: %s, value %s", key, value));
+                        } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    reader.close();
+                }
+            }
+
+            if (!storeResult)
+                fileSystem.delete(config.getOutputPath(), true);
+            LOGGER.warn(mbrContextData.toString());
+            return mbrContextData;
         }
-        if(!storeResult)
-            fileSystem.delete(config.getOutputPath(), true);
+
+        return null;
     }
-
-    public static void fileMBBoxMapReduce(Path path) {
-
-    }
-
 }

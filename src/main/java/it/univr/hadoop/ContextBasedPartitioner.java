@@ -1,8 +1,8 @@
 package it.univr.hadoop;
 
 import it.univr.hadoop.conf.OperationConf;
+import it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
-import it.univr.veronacard.VeronaCardRecord;
 import it.univr.veronacard.VeronaCardWritable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.*;
@@ -29,12 +29,12 @@ public class ContextBasedPartitioner {
 
         long t1 = System.currentTimeMillis();
         long t2 = System.currentTimeMillis();
-        long resultSize = doPartition(configuration);
+        long resultSize = makePartition(configuration);
         System.out.println("Total time: "+(t2-t1)+" millis");
         System.out.println("Result size: "+resultSize);
     }
 
-    private static long doPartition(OperationConf config) throws IOException, ClassNotFoundException, InterruptedException {
+    private static long makePartition(OperationConf config) throws IOException, ClassNotFoundException, InterruptedException {
         Job job = Job.getInstance(config, "CBMR");
         job.setJarByClass(ContextBasedPartitioner.class);
         //set Split size configuration
@@ -50,6 +50,11 @@ public class ContextBasedPartitioner {
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);
         VeronaCardCSVInputFormat.setInputPaths(job, inputPaths);
+
+        //MBBox map reduce
+        MBBoxMapReduce.runMBBoxMapReduce(config, VeronaCardCSVInputFormat.class,false);
+
+
 
         //output
         job.setOutputFormatClass(TextOutputFormat.class);
