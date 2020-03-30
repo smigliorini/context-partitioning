@@ -1,4 +1,4 @@
-package it.univr.hadoop.util;
+package it.univr.util;
 
 import java.util.Comparator;
 import java.util.stream.Collector;

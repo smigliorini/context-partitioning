@@ -46,7 +46,8 @@ public class MBBoxMapReduce {
         }
         Path[] inputPaths = new Path[configuration.getFileInputPaths().size()];
         configuration.getFileInputPaths().toArray(inputPaths);
-        runMBBoxMapReduce(configuration, VeronaCardCSVInputFormat.class,true);
+        Pair<ContextData, ContextData> contextDataContextDataPair = runMBBoxMapReduce(configuration,
+                VeronaCardCSVInputFormat.class, true);
     }
 
     /**
@@ -92,7 +93,7 @@ public class MBBoxMapReduce {
             //output
             FileOutputFormat.setOutputPath(job, config.getOutputPath());
             job.setOutputFormatClass(TextOutputFormat.class);
-
+            job.getConfiguration().set("Bubu", "1234");
             job.waitForCompletion(true);
 
             Counters counters = job.getCounters();
@@ -133,8 +134,6 @@ public class MBBoxMapReduce {
 
             if (!storeResult)
                 fileSystem.delete(config.getOutputPath(), true);
-            LOGGER.warn(mbrMinContextData.toString());
-            LOGGER.warn(mbrMaxContextData.toString());
             Pair<ContextData, ContextData> maxMinContextData = Pair.of(minContextData.get(), maxContextData.get());
             return maxMinContextData;
         }

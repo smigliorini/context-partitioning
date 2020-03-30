@@ -21,12 +21,15 @@ import java.util.stream.Stream;
 import static java.lang.String.format;
 
 public class OperationConf extends Configuration {
-    static final Logger LOGGER = LogManager.getLogger(OperationConf.class);
+    public static final Logger LOGGER = LogManager.getLogger(OperationConf.class);
+    public static final String CELL_SIDE_PROPERTY = "cell-side";
+    public static final String SPLIT_NUMBER_FILES = "split-number-files";
+    public static final String CONTEXT_SET_DIM = "context-set-dim";
 
     public Optional<HContexBasedConf> hContextBasedConf;
     public Vector<Path> filePaths;
     public PartitionTechnique technique;
-    public ContextData mbrContextData;
+    private ContextData mbrContextData;
 
 
     public OperationConf(GenericOptionsParser genericOptionsParser) {
@@ -113,5 +116,23 @@ public class OperationConf extends Configuration {
 
     public ContextData getMbrContextData() {return mbrContextData;}
 
-    public void setMbrContextData(ContextData mbrContextData) { this.mbrContextData = mbrContextData;}
+    public void setMbrContextData(ContextData mbrContextData) {
+        this.mbrContextData = mbrContextData;
+        this.set(CONTEXT_SET_DIM, String.valueOf(mbrContextData.getContextFields().length));
+    }
+
+    public static void setSplitNumberFiles(Configuration conf, long splitNumberFiles) {
+        conf.set(SPLIT_NUMBER_FILES, String.valueOf(splitNumberFiles));
+    }
+
+    public static Long getSplitNumberFiles(Configuration conf) {
+        return Long.parseLong(conf.get(SPLIT_NUMBER_FILES));
+    }
+
+
+    public static Long getContextSetDim(Configuration conf) {
+        return Long.parseLong(conf.get(CONTEXT_SET_DIM));
+    }
+
+
 }

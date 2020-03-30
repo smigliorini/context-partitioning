@@ -1,4 +1,6 @@
 package it.univr.hadoop.mapreduce.multidim;
 
-public class MultiDimReducer {
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class MultiDimReducer extends Reducer {
 }

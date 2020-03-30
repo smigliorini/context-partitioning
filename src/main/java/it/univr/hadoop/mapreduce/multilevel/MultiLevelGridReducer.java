@@ -1,4 +1,6 @@
 package it.univr.hadoop.mapreduce.multilevel;
 
-public class MultiLevelGridReducer {
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class MultiLevelGridReducer extends Reducer {
 }

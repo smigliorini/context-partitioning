@@ -67,6 +67,7 @@ public abstract class CSVRecordReader<K extends WritableComparable, V extends Wr
     public synchronized void close() throws IOException {
         if(reader != null) {
             reader.close();
+
         }
     }
 }

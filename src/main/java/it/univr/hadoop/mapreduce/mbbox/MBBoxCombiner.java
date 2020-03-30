@@ -1,18 +1,14 @@
 package it.univr.hadoop.mapreduce.mbbox;
 
-import it.univr.hadoop.util.Stats;
+import it.univr.util.Stats;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.join.TupleWritable;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static java.lang.String.format;

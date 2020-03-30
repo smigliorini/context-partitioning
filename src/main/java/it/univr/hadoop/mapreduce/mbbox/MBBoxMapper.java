@@ -1,6 +1,7 @@
 package it.univr.hadoop.mapreduce.mbbox;
 
 import it.univr.hadoop.ContextData;
+import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.ObjectWritable;
