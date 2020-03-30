@@ -50,7 +50,7 @@ public class OperationConf extends Configuration {
                 .map(s -> new Path(s))
                 .collect(Collectors.toList()));
 
-        technique = Stream.of(args).filter(arg -> arg.contains(PartitionTechnique.CONTEXT_AWARE.getPartitionTechnique())
+        technique = Stream.of(args).filter(arg -> arg.contains(PartitionTechnique.BOUX_COUNT.getPartitionTechnique())
                 || arg.contains(PartitionTechnique.MD_GRID.getPartitionTechnique())
                 || arg.contains(PartitionTechnique.ML_GRID.getPartitionTechnique())).map(s -> PartitionTechnique.valueOf(s))
                 .findFirst().orElse(PartitionTechnique.MD_GRID);

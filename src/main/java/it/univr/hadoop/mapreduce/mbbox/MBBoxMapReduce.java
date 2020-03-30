@@ -2,8 +2,10 @@ package it.univr.hadoop.mapreduce.mbbox;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
+import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,8 +28,7 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.util.Optional;
 
 import static java.lang.String.format;
 
@@ -60,7 +61,7 @@ public class MBBoxMapReduce {
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
-    public static ContextData runMBBoxMapReduce(OperationConf config, Class< ? extends FileInputFormat> inputFormatClass, boolean storeResult) throws IOException, ClassNotFoundException, InterruptedException {
+    public static Pair<ContextData, ContextData> runMBBoxMapReduce(OperationConf config, Class< ? extends FileInputFormat> inputFormatClass, boolean storeResult) throws IOException, ClassNotFoundException, InterruptedException {
         Job job = Job.getInstance(config, "MBBoxMapReduce");
         config.hContextBasedConf.ifPresent(customConf -> {
             FileInputFormat.setMinInputSplitSize(job, customConf.getSplitSize(config.technique));
@@ -78,32 +79,27 @@ public class MBBoxMapReduce {
         job.setCombinerClass(MBBoxCombiner.class);
         job.setReducerClass(MBBoxReducer.class);
 
-        ContextData contextData = null;
-        job.setInputFormatClass(inputFormatClass);
-        Type genericSuperclass = inputFormatClass.getGenericSuperclass();
 
-        //Retrieve InputFormat information to process the data and return a Context data value holder of the range.
-        ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
-        Type[] actualTypeArgument = parameterizedType.getActualTypeArguments();
-        Type type = actualTypeArgument[1];
-        if (ContextData.class.isAssignableFrom((Class<?>) type)) {
-            Class<? extends ContextData> valueClass = (Class<? extends ContextData>) type;
-            try {
-                contextData = valueClass.getConstructor().newInstance();
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-
+        Optional<? extends ContextData> minContextData = ContextBasedUtil
+                .getContextDataInstanceFromInputFormat(inputFormatClass);
+        Optional<? extends ContextData> maxContextData = ContextBasedUtil
+                .getContextDataInstanceFromInputFormat(inputFormatClass);
+        if(maxContextData.isPresent() && minContextData.isPresent()) {
+            //input setup
+            job.setInputFormatClass(inputFormatClass);
             FileInputFormat.setInputPaths(job, inputPaths);
-            job.setOutputFormatClass(TextOutputFormat.class);
-            FileOutputFormat.setOutputPath(job, config.getOutputPath());
 
             //output
+            FileOutputFormat.setOutputPath(job, config.getOutputPath());
+            job.setOutputFormatClass(TextOutputFormat.class);
+
             job.waitForCompletion(true);
+
             Counters counters = job.getCounters();
             Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);
             outputRecordCounter.getValue();
-            ContextData mbrContextData = contextData;
+            ContextData mbrMaxContextData = maxContextData.get();
+            ContextData mbrMinContextData = minContextData.get();
             FileSystem fileSystem = FileSystem.get(config);
             for (FileStatus fileStatus : fileSystem.listStatus(config.getOutputPath())) {
                 if (!fileStatus.isDirectory()) {
@@ -111,12 +107,21 @@ public class MBBoxMapReduce {
                             new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
                     Text key = reader.createKey();
                     Text value = reader.createValue();
+                    boolean min = true;
                     while (reader.next(key, value)) {
                         try {
+                            ContextData contextData;
+                            if(min) {
+                                contextData = mbrMinContextData;
+                                min = false;
+                            } else {
+                                contextData = mbrMaxContextData;
+                                min = true;
+                            }
                             PropertyDescriptor descriptor = new PropertyDescriptor(key.toString(),
-                                    mbrContextData.getClass());
+                                    contextData.getClass());
                             Object propertyValue = WritablePrimitiveMapper.getBeanObjectFromText(value, descriptor.getPropertyType());
-                            descriptor.getWriteMethod().invoke(mbrContextData, propertyValue);
+                            descriptor.getWriteMethod().invoke(contextData, propertyValue);
                             LOGGER.info(format("MBR output field: %s, value %s", key, value));
                         } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
                             e.printStackTrace();
@@ -128,10 +133,11 @@ public class MBBoxMapReduce {
 
             if (!storeResult)
                 fileSystem.delete(config.getOutputPath(), true);
-            LOGGER.warn(mbrContextData.toString());
-            return mbrContextData;
+            LOGGER.warn(mbrMinContextData.toString());
+            LOGGER.warn(mbrMaxContextData.toString());
+            Pair<ContextData, ContextData> maxMinContextData = Pair.of(minContextData.get(), maxContextData.get());
+            return maxMinContextData;
         }
-
-        return null;
+        return Pair.of(null, null);
     }
 }

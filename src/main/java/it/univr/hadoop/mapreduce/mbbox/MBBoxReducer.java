@@ -17,6 +17,7 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
@@ -26,13 +27,28 @@ public class MBBoxReducer extends Reducer<Text, ObjectWritable, Writable, Writab
     @Override
     protected void reduce(Text key, Iterable<ObjectWritable> values, Context context) throws IOException, InterruptedException {
 
-        Optional<WritableComparable> max = StreamSupport.stream(values.spliterator(), false)
-                .map(value -> (WritableComparable) value.get())
-                .max(WritableComparable::compareTo);
+        //TODO make the min max calculation with Java stream and parallelism
+        Iterator<ObjectWritable> iterator = values.iterator();
+        WritableComparable min = null;
+        WritableComparable max = null;
+        while (iterator.hasNext()) {
+            if(min == null) {
+                min = (WritableComparable) iterator.next().get();
+                max = (WritableComparable) iterator.next().get();
+            } else {
+                WritableComparable next = (WritableComparable) iterator.next().get();
+                if(max.compareTo(next) < 0)
+                    max = next;
+                if(min.compareTo(next) > 0)
+                    min = next;
+            }
+        }
 
-
-        if(max.isPresent()) {
-            context.write(key, max.get());
+        if(min != null) {
+            context.write(key, min);
+        }
+        if(max != null) {
+            context.write(key, max);
         }
     }
 }

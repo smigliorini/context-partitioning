@@ -3,7 +3,7 @@ package it.univr.hadoop.conf;
 
 public enum PartitionTechnique {
 
-    ML_GRID("ML_GRID"), MD_GRID("MD_GRID"),CONTEXT_AWARE("CONTEXT_AWARE");
+    ML_GRID("ML_GRID"), MD_GRID("MD_GRID"), BOUX_COUNT("CONTEXT_AWARE");
 
     private String partitionTechnique;
 
