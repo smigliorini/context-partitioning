@@ -2,6 +2,7 @@ package it.univr.hadoop.mapreduce.mbbox;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
+import it.univr.hadoop.util.Stats;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -21,34 +22,20 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import static java.lang.String.format;
+
 public class MBBoxReducer extends Reducer<Text, ObjectWritable, Writable, Writable> {
     static final Logger LOGGER = LogManager.getLogger(MBBoxReducer.class);
 
     @Override
     protected void reduce(Text key, Iterable<ObjectWritable> values, Context context) throws IOException, InterruptedException {
-
-        //TODO make the min max calculation with Java stream and parallelism
-        Iterator<ObjectWritable> iterator = values.iterator();
-        WritableComparable min = null;
-        WritableComparable max = null;
-        while (iterator.hasNext()) {
-            if(min == null) {
-                min = (WritableComparable) iterator.next().get();
-                max = (WritableComparable) iterator.next().get();
-            } else {
-                WritableComparable next = (WritableComparable) iterator.next().get();
-                if(max.compareTo(next) < 0)
-                    max = next;
-                if(min.compareTo(next) > 0)
-                    min = next;
-            }
-        }
-
-        if(min != null) {
-            context.write(key, min);
-        }
-        if(max != null) {
-            context.write(key, max);
-        }
+        Stats<WritableComparable> collect = StreamSupport.stream(values.spliterator(), false)
+                .map(value -> (WritableComparable) value.get())
+                .collect(Stats.collector(WritableComparable::compareTo));
+        if(collect.count() > 0) {
+            context.write(key, collect.min());
+            context.write(key, collect.max());
+        } else
+            LOGGER.warn("No min max value found!");
     }
 }

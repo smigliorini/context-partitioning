@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import static java.lang.String.format;
+
 
 public class MBBoxCombiner extends Reducer<Text, ObjectWritable, Text, ObjectWritable> {
 
@@ -28,31 +30,13 @@ public class MBBoxCombiner extends Reducer<Text, ObjectWritable, Text, ObjectWri
 
     @Override
     protected void reduce(Text key, Iterable<ObjectWritable> values, Context context) throws IOException, InterruptedException {
-        //TODO make the min max calculation with Java stream and parallelism
-        Iterator<ObjectWritable> iterator = values.iterator();
-
-        WritableComparable min = null;
-        WritableComparable max = null;
-        while (iterator.hasNext()) {
-            if(min == null) {
-                min = (WritableComparable) iterator.next().get();
-                max = (WritableComparable) iterator.next().get();
-            } else {
-                WritableComparable next = (WritableComparable) iterator.next().get();
-                if(max.compareTo(next) < 0)
-                    max = next;
-                if(min.compareTo(next) > 0)
-                    min = next;
-            }
-        }
-
-        if(min != null) {
-            context.write(key, new ObjectWritable(min));
-        }else
-            LOGGER_COMBINER.warn("No min value found!");
-        if(min != null) {
-            context.write(key, new ObjectWritable(max));
-        }else
-            LOGGER_COMBINER.warn("No max value found!");
+        Stats<WritableComparable> collect = StreamSupport.stream(values.spliterator(), false)
+                .map(value -> (WritableComparable) value.get())
+                .collect(Stats.collector(WritableComparable::compareTo));
+        if(collect.count() > 0){
+            context.write(key, new ObjectWritable(collect.min()));
+            context.write(key, new ObjectWritable(collect.max()));
+        } else
+            LOGGER_COMBINER.warn("No min max value found!");
     }
 }
