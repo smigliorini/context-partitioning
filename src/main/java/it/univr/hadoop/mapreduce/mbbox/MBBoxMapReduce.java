@@ -100,7 +100,6 @@ public class MBBoxMapReduce {
             //output
             FileOutputFormat.setOutputPath(job, config.getOutputPath());
             job.setOutputFormatClass(TextOutputFormat.class);
-            job.getConfiguration().set("Bubu", "1234");
             job.waitForCompletion(true);
 
             Counters counters = job.getCounters();

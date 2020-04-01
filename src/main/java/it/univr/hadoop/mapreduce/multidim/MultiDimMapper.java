@@ -32,16 +32,18 @@ public class MultiDimMapper <V extends ContextData> extends Mapper<LongWritable,
         Long splitNumberFiles = OperationConf.getSplitNumberFiles(context.getConfiguration());
         Long contextSetDim = OperationConf.getContextSetDim(context.getConfiguration());
         map = new HashMap<>(contextSetDim.intValue());
-        final double powerIndex = 1 / contextSetDim;
-        LOGGER.warn(format("Splits are %d", splitNumberFiles));
-        LOGGER.warn(format("Power Index %f", powerIndex));
+        final double powerIndex = 1.0 / contextSetDim;
+        LOGGER.info(format("Splits are %d", splitNumberFiles));
+        LOGGER.info(format("Power Index %f", powerIndex));
         numCellPerSide = (int) ceil( pow(splitNumberFiles, powerIndex));
-        LOGGER.warn(format("Num cell per side is: %d", numCellPerSide));
+        LOGGER.info(format("Num cell per side is: %d", numCellPerSide));
     }
 
     @Override
     protected void map(LongWritable key, ContextData contextData, Context context) throws IOException, InterruptedException {
         StringBuilder keyBuilder = new StringBuilder("part-");
+
+        //TODO does it make sense to use a string as key instead a long, as sum of all realative values?
         long keyValue = 0;
         for (String property : contextData.getContextFields()) {
             Pair<Double, Double> minMax = map.get(property);
@@ -58,10 +60,10 @@ public class MultiDimMapper <V extends ContextData> extends Mapper<LongWritable,
             Object propertyValue = ReflectionUtil.readMethod(property, contextData);
             Double value;
             if(propertyValue instanceof WritableComparable)
-                value = Double.valueOf(WritablePrimitiveMapper.getBeanFromWritable((WritableComparable) propertyValue).toString());
+                value = Double.valueOf(WritablePrimitiveMapper
+                        .getBeanFromWritable((WritableComparable) propertyValue).toString());
             else
                 value = Double.valueOf(propertyValue.toString());
-            //LOGGER.warn(format("Property %s value is %.2f", property, value));
             if(value == max) {
                 keyValue += numCellPerSide -1;
                 keyBuilder.append(numCellPerSide-1);
@@ -70,12 +72,9 @@ public class MultiDimMapper <V extends ContextData> extends Mapper<LongWritable,
                 keyValue += keyval;
                 keyBuilder.append(keyval);
             }
-            //LOGGER.warn(format("key comp %s ", keyBuilder.toString()));
             keyBuilder.append("-");
         }
         keyBuilder.deleteCharAt(keyBuilder.length()-1);
-        //LOGGER.error(keyBuilder.toString());
-        //LOGGER.error("Key is------" + keyValue);
         context.write(new Text(keyBuilder.toString()), (V) contextData);
         //context.write(new LongWritable(keyValue), (V) contextData);
     }

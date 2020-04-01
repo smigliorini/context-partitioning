@@ -1,7 +1,6 @@
 package it.univr.hadoop.mapreduce.multidim;
 
 import it.univr.hadoop.ContextData;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -15,7 +14,6 @@ import java.util.stream.StreamSupport;
 public class MultiDimReducer extends Reducer<Text, ContextData, NullWritable, Text> {
 
     static final Logger LOGGER = LogManager.getLogger(MultiDimReducer.class);
-
     MultipleOutputs<NullWritable, Text> multipleOutputs;
 
     @Override

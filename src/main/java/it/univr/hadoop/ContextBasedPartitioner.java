@@ -20,6 +20,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -30,8 +31,10 @@ import java.util.stream.Stream;
 
 public class ContextBasedPartitioner {
     static final Logger LOGGER = LogManager.getLogger(ContextBasedPartitioner.class);
+
     public static long makePartitions(String[] args, Class<? extends FileInputFormat> inputFormatClass)
             throws IOException, ClassNotFoundException, InterruptedException {
+        //LogManager.getRootLogger().setLevel(Level.WARN);
         OperationConf config = new OperationConf(new GenericOptionsParser(args));
         if(!config.validInputOutputFiles()) {
             LOGGER.error("Invalid input files");
