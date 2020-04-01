@@ -4,6 +4,7 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
+import it.univr.util.ReflectionUtil;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileStatus;
@@ -29,6 +30,7 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
@@ -48,6 +50,11 @@ public class MBBoxMapReduce {
         configuration.getFileInputPaths().toArray(inputPaths);
         Pair<ContextData, ContextData> contextDataContextDataPair = runMBBoxMapReduce(configuration,
                 VeronaCardCSVInputFormat.class, true);
+        Stream.of(contextDataContextDataPair.getLeft().getContextFields()).forEach(value -> {
+            Object min = ReflectionUtil.readMethod(value, contextDataContextDataPair.getLeft());
+            Object max = ReflectionUtil.readMethod(value, contextDataContextDataPair.getRight());
+            System.out.println(format("%s ->(%s, %s)", value, min.toString(), max.toString()));
+        });
     }
 
     /**

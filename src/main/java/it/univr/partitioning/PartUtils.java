@@ -321,7 +321,7 @@ public class PartUtils {
     final Set<String> keySet = new HashSet<String>();
 
     try( BufferedReader br = new BufferedReader( new FileReader( input ) ) ) {
-      try( BufferedWriter wr = new BufferedWriter( new FileWriter( tempFile ) ) ) {
+        try( BufferedWriter wr = new BufferedWriter( new FileWriter( tempFile ) ) ) {
 
         String line;
         while( ( line = br.readLine() ) != null ) {

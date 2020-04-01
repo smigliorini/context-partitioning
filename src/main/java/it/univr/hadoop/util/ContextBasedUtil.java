@@ -30,4 +30,16 @@ public class ContextBasedUtil {
         }
         return Optional.empty();
     }
+
+    public static Optional<Class<? extends ContextData>> getContextDataClassFromInputFormat(Class< ? extends FileInputFormat> inputFormatClass) {
+        //Retrieve InputFormat information to process the data and return a Context data value holder of the range.
+        Type genericSuperclass = inputFormatClass.getGenericSuperclass();
+        ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+        Type[] actualTypeArgument = parameterizedType.getActualTypeArguments();
+        Type type = actualTypeArgument[1];
+        if (ContextData.class.isAssignableFrom((Class<?>) type)) {
+            return Optional.of((Class<? extends ContextData>) type);
+        }
+        return Optional.empty();
+    }
 }

@@ -25,6 +25,5 @@ public class VeronaCardRecordReader<V extends VeronaCardWritable> extends CSVRec
     @Override
     public synchronized void close() throws IOException {
         super.close();
-        LOGGER.error(format("-------------- readline count: %d-------------", linesRead));
     }
 }

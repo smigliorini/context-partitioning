@@ -24,12 +24,13 @@ public class OperationConf extends Configuration {
     public static final Logger LOGGER = LogManager.getLogger(OperationConf.class);
     public static final String CELL_SIDE_PROPERTY = "cell-side";
     public static final String SPLIT_NUMBER_FILES = "split-number-files";
-    public static final String CONTEXT_SET_DIM = "context-set-dim";
+    public static final String CONTEXT_SET_DIM = "ctx-set-dim";
+    public static final String MIN_PROPERTY_FIELD = "Min";
+    public static final String MAX_PROPERTY_FIELD = "Max";
 
     public Optional<HContexBasedConf> hContextBasedConf;
     public Vector<Path> filePaths;
     public PartitionTechnique technique;
-    private ContextData mbrContextData;
 
 
     public OperationConf(GenericOptionsParser genericOptionsParser) {
@@ -114,13 +115,6 @@ public class OperationConf extends Configuration {
         return technique;
     }
 
-    public ContextData getMbrContextData() {return mbrContextData;}
-
-    public void setMbrContextData(ContextData mbrContextData) {
-        this.mbrContextData = mbrContextData;
-        this.set(CONTEXT_SET_DIM, String.valueOf(mbrContextData.getContextFields().length));
-    }
-
     public static void setSplitNumberFiles(Configuration conf, long splitNumberFiles) {
         conf.set(SPLIT_NUMBER_FILES, String.valueOf(splitNumberFiles));
     }
@@ -130,8 +124,28 @@ public class OperationConf extends Configuration {
     }
 
 
+    public static void setContextSetDim(Configuration conf, long dim) {
+        conf.set(CONTEXT_SET_DIM, String.valueOf(dim));
+    }
+
     public static Long getContextSetDim(Configuration conf) {
         return Long.parseLong(conf.get(CONTEXT_SET_DIM));
+    }
+
+    public static void setMinProperty(Configuration conf, String propertyName, Double min) {
+        conf.set(propertyName + MIN_PROPERTY_FIELD, min.toString());
+    }
+
+    public static Double getMinProperty(String propertyName, Configuration conf) {
+        return Double.parseDouble(conf.get(propertyName + MIN_PROPERTY_FIELD));
+    }
+
+    public static void setMaxProperty(Configuration conf, String propertyName, Double max) {
+        conf.set(propertyName + MAX_PROPERTY_FIELD, max.toString());
+    }
+
+    public static Double getMaxProperty(String propertyName, Configuration conf) {
+        return Double.parseDouble(conf.get(propertyName + MAX_PROPERTY_FIELD));
     }
 
 

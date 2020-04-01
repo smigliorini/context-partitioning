@@ -13,15 +13,18 @@ import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.util.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -35,29 +38,15 @@ public class ContextBasedPartitioner {
             System.exit(1);
         }
 
-        Job job = Job.getInstance(config, "CBMR");
-        job.setJarByClass(ContextBasedPartitioner.class);
-        //set Split size configuration
 
-        config.hContextBasedConf.ifPresentOrElse(customConf -> {
-            Long splitSize = customConf.getSplitSize(config.technique);
-            FileInputFormat.setMinInputSplitSize(job, splitSize);
-            FileInputFormat.setMaxInputSplitSize(job, splitSize);
-        }, () -> {
-            //mapreduce.input.fileinputformat.split.minsize
-        });
-
-        //MBB Running
-        config.setMbrContextData(ContextBasedUtil
-                .getContextDataInstanceFromInputFormat(inputFormatClass).get());
         //MBBox map reduce
         Pair<ContextData, ContextData> contextData = MBBoxMapReduce.runMBBoxMapReduce(config, inputFormatClass,
                 false);
-        //TODO How to pass the information of cellSide when there are more than one files? It depends on the processed files
-        //TODO I'm trying with Job configuration setup lets see if it does work.
+        //TODO Store the information as json string type inside the configuration parameter?
         ContextData minContextDataValue = contextData.getLeft();
         if(minContextDataValue != null) {
             //input setup
+            OperationConf.setContextSetDim(config, contextData.getKey().getContextFields().length);
             //Width calculation
             Stream.of(minContextDataValue.getContextFields()).forEach(property -> {
                 ContextData maxContextDataValue = contextData.getRight();
@@ -65,8 +54,20 @@ public class ContextBasedPartitioner {
                 Comparable<?> minValue = (Comparable<?>) ReflectionUtil.readMethod(property, minContextDataValue);
                 Double max = Double.valueOf(maxValue.toString());
                 Double min = Double.valueOf(minValue.toString());
-                Double width = max - min;
-                config.set(property, width.toString());
+                OperationConf.setMinProperty(config, property, min);
+                OperationConf.setMaxProperty(config, property, max);
+            });
+
+            Job job = Job.getInstance(config, "CBMR");
+            job.setJarByClass(ContextBasedPartitioner.class);
+            //set Split size configuration
+
+            config.hContextBasedConf.ifPresentOrElse(customConf -> {
+                Long splitSize = customConf.getSplitSize(config.technique);
+                FileInputFormat.setMinInputSplitSize(job, splitSize);
+                FileInputFormat.setMaxInputSplitSize(job, splitSize);
+            }, () -> {
+                //mapreduce.input.fileinputformat.split.minsize
             });
             Path[] inputPaths = new Path[config.getFileInputPaths().size()];
             config.getFileInputPaths().toArray(inputPaths);
@@ -74,7 +75,7 @@ public class ContextBasedPartitioner {
             job.setInputFormatClass(inputFormatClass);
 
             //Mapper setup
-            Class<?> mapOutputKeyClass;
+            Class<?> mapOutputKeyClass = Text.class;//TODO
             Class<?> mapOutputValueClass = ContextData.class;
             Class<? extends Mapper> mapperClass;
             Class<? extends Reducer> reducerClass;
@@ -84,19 +85,25 @@ public class ContextBasedPartitioner {
             } else if(config.technique == PartitionTechnique.MD_GRID) {
                 mapperClass = MultiDimMapper.class;
                 reducerClass = MultiDimReducer.class;
+                Optional<Class<? extends ContextData>> present = ContextBasedUtil.getContextDataClassFromInputFormat(inputFormatClass);
+                if(present.isPresent()) {
+                    mapOutputValueClass = present.get();
+                }
+                //mapOutputKeyClass = LongWritable.class;
             } else {
                 mapperClass = BoxCountingMapper.class;
                 reducerClass = BoxCountingReducer.class;
             }
-
-            //job.setMapOutputKeyClass();
+            job.setMapOutputKeyClass(mapOutputKeyClass);
             job.setMapOutputValueClass(mapOutputValueClass);
             job.setMapperClass(mapperClass);
             //Reducer setup
             job.setReducerClass(reducerClass);
 
             //output
-            job.setOutputFormatClass(TextOutputFormat.class);
+            //TODO set a different format class?
+            LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+            //job.setOutputFormatClass(TextOutputFormat.class);
             FileOutputFormat.setOutputPath(job, config.getOutputPath());
 
             //job

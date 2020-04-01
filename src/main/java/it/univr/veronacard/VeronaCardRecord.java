@@ -10,6 +10,8 @@ import java.util.Objects;
  */
 public class VeronaCardRecord {
 
+  public static final String SPLITERATOR = ",";
+
   protected String vcSerial;
   protected Double x;
   protected Double y;
@@ -126,15 +128,15 @@ public class VeronaCardRecord {
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(vcSerial);
-    builder.append(" ");
+    builder.append(SPLITERATOR);
     builder.append(x);
-    builder.append(" ");
+    builder.append(SPLITERATOR);
     builder.append(y);
-    builder.append(" ");
+    builder.append(SPLITERATOR);
     builder.append(time);
-    builder.append(" ");
+    builder.append(SPLITERATOR);
     builder.append(poiName);
-    builder.append(" ");
+    builder.append(SPLITERATOR);
     builder.append(age);
     return builder.toString();
 

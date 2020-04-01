@@ -24,7 +24,7 @@ public abstract  class CSVInputFormat<K, V extends ContextData> extends FileInpu
     public List<InputSplit> getSplits(JobContext job) throws IOException {
         List<InputSplit> splits = super.getSplits(job);
         OperationConf.setSplitNumberFiles(job.getConfiguration(), splits.size());
-        LOGGER.warn(format("Splits number are: %d", splits.size()));
+        LOGGER.info(format("Splits number are: %d", splits.size()));
         return splits;
 
     }

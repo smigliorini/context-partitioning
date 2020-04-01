@@ -211,7 +211,7 @@ public class MultiDimPartitioning {
             90.000000
     };
 
-    generateContextBasedParts( input, new File( dataDir, cbPartDir ), separator, partPrefix, splitSize, timeSplits, xSplits, ySplits, aSplits );
+    //generateContextBasedParts( input, new File( dataDir, cbPartDir ), separator, partPrefix, splitSize, timeSplits, xSplits, ySplits, aSplits );
   }
 
 
