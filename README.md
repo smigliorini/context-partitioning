@@ -34,13 +34,12 @@ outputPath: path to the output directory. The directory is created from the appl
 
 
 ##### Command Examples
-Context based run running command:
-	-`hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`
-Context based running command by passing hadoop standard reduce tasks configuration:
-	-`hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`
-
-Minimum Bounding Box running run command:
-	-`hadoop it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`
+Context based run running command:  
+	- `hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
+Context based running command by passing hadoop standard reduce tasks configuration:  
+	- `hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
+Minimum Bounding Box running run command:  
+	- `hadoop it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
 
 
 
