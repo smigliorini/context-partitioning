@@ -1,6 +1,6 @@
 package it.univr.hadoop.conf;
 
-import it.univr.hadoop.ContextData;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -54,7 +54,7 @@ public class OperationConf extends Configuration {
                 .map(s -> new Path(s))
                 .collect(Collectors.toList()));
 
-        technique = Stream.of(args).filter(arg -> arg.contains(PartitionTechnique.BOUX_COUNT.getPartitionTechnique())
+        technique = Stream.of(args).filter(arg -> arg.contains(PartitionTechnique.BOX_COUNT.getPartitionTechnique())
                 || arg.contains(PartitionTechnique.MD_GRID.getPartitionTechnique())
                 || arg.contains(PartitionTechnique.ML_GRID.getPartitionTechnique())).map(s -> PartitionTechnique.valueOf(s))
                 .findFirst().orElse(PartitionTechnique.MD_GRID);
@@ -146,6 +146,12 @@ public class OperationConf extends Configuration {
 
     public static Double getMaxProperty(String propertyName, Configuration conf) {
         return Double.parseDouble(conf.get(propertyName + MAX_PROPERTY_FIELD));
+    }
+
+    public static Pair<Double, Double> getMinMax(String property, Configuration conf) {
+        Double min = OperationConf.getMinProperty(property, conf);
+        Double max = OperationConf.getMaxProperty(property, conf);
+        return Pair.of(min, max);
     }
 
 

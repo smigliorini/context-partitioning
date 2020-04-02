@@ -176,8 +176,8 @@ public class MultiDimPartitioning {
 
 
     //generateRandomParts( input, new File( dataDir, randomPartDir ), splitSize, partPrefix );
-    generateUniformMultiDimGridParts( input, new File( dataDir, mdGridPartDir ), splitSize, partPrefix, b, separator );
-    //generateUniformMultiLevelGridParts( input, new File( dataDir, mlGridPartDir ), splitSize, partPrefix, b, separator );
+    //generateUniformMultiDimGridParts( input, new File( dataDir, mdGridPartDir ), splitSize, partPrefix, b, separator );
+    generateUniformMultiLevelGridParts( input, new File( dataDir, mlGridPartDir ), splitSize, partPrefix, b, separator );
 
     final double[] timeSplits = new double[] {
             1388575020000.000000,
