@@ -5,12 +5,12 @@ Import the project from Intellij or any IDE compatible with a Java project
 
 The project is a Maven based project, be sure to already have maven installed in your computer.
 ### Maven
-Useful commands
-	- `mvn compile` compile and download all the dependecies
-	- `mvn clean` clean
-	- `mvn package` take the compiled code and package it, as a JAR
+Useful commands  
+	- `mvn compile` compile and download all the dependecies  
+	- `mvn clean` clean  
+	- `mvn package` take the compiled code and package it, as a JAR  
 
-The packaging does already make a Fat JAR with all dependecies of the project, thanks to pom.xml configuration.
+The packaging does already make a Fat JAR with all dependecies of the project, thanks to pom.xml configuration.  
 Note: IntelliJ does already have some shortcuts for compiling and cleaning the project with Maven.
 
 ### Custom Configuration
@@ -24,11 +24,13 @@ Custom Hadoop configuration are defined and loader from conf.xml file, where we 
 ### Run commands
 	 `hadoop mainPathPackage [-Dhadoopconf] [PARTITION_TECHNIQUE] inputFilePath [outputPath]`
 
-PARTITION_TECHNIQUE:
-	- ML_GRID 
-	- MD_GRID 
-	- BOUX_COUNT  
+PARTITION_TECHNIQUE:  
+	- ML_GRID  
+	- MD_GRID  
+	- BOUX_COUNT    
+
 By default the application use MD_GRID  
+
 
 outputPath: path to the output directory. The directory is created from the application as Hadoop standard application, hence It has not to be already in the FS. When the output path is not provided the application automaticcally will create a an out directory in the input's directory.
 
