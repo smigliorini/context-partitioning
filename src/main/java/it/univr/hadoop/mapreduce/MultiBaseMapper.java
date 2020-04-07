@@ -8,7 +8,6 @@ import it.univr.util.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.LogManager;
@@ -21,7 +20,7 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.pow;
 import static java.lang.String.format;
 
-public abstract class MultiBaseMapper <V extends ContextData> extends Mapper<LongWritable, ContextData, Text, V> {
+public abstract class MultiBaseMapper <K extends WritableComparable, V extends ContextData> extends Mapper<LongWritable, ContextData, K, V> {
 
     private static final Logger BASE_LOGGER = LogManager.getLogger(MultiDimMapper.class);
 
@@ -47,9 +46,7 @@ public abstract class MultiBaseMapper <V extends ContextData> extends Mapper<Lon
     }
 
     //Key
-    protected String propertyOperationPartition (String property, ContextData contextData, Configuration configuration,
-                                                 String key) {
-        StringBuilder newKey = new StringBuilder(key);
+    protected long propertyOperationPartition (String property, ContextData contextData, Configuration configuration) {
         Pair<Double, Double> minMax = map.get(property);
         if (minMax == null) {
             minMax = OperationConf.getMinMax(property, configuration);
@@ -68,12 +65,9 @@ public abstract class MultiBaseMapper <V extends ContextData> extends Mapper<Lon
         else
             value = Double.valueOf(propertyValue.toString());
         if (value == max) {
-            newKey.append(numCellPerSide - 1);
+            return numCellPerSide - 1;
         } else {
-            int keyval = (int) ((value - min) / width);
-            newKey.append(keyval);
+            return (int) ((value - min) / width);
         }
-        newKey.append("-");
-        return newKey.toString();
     }
 }

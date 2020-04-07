@@ -2,14 +2,17 @@ package it.univr.hadoop.mapreduce.multidim;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.mapreduce.MultiBaseReducer;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
 
 import java.io.IOException;
 
-public class MultiDimReducer extends MultiBaseReducer {
+public class MultiDimReducer<K extends WritableComparable, V extends ContextData> extends MultiBaseReducer <K, V> {
 
     @Override
-    protected void reduce(Text key, Iterable<ContextData> values, Context context) throws IOException, InterruptedException {
+    protected void reduce(K key, Iterable<V> values, Context context) throws IOException, InterruptedException {
         super.reduce(key, values, context);
     }
+
 }

@@ -78,7 +78,7 @@ public class ContextBasedPartitioner {
             job.setInputFormatClass(inputFormatClass);
 
             //Mapper setup
-            Class<?> mapOutputKeyClass = Text.class;//TODO
+            Class<?> mapOutputKeyClass = Text.class;
             Class<?> mapOutputValueClass = ContextData.class;
             Class<? extends Mapper> mapperClass;
             Class<? extends Reducer> reducerClass;
@@ -92,7 +92,6 @@ public class ContextBasedPartitioner {
                 if(present.isPresent()) {
                     mapOutputValueClass = present.get();
                 }
-                //mapOutputKeyClass = LongWritable.class;
             } else {
                 mapperClass = BoxCountingMapper.class;
                 reducerClass = BoxCountingReducer.class;
