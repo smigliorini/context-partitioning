@@ -3,13 +3,10 @@ package it.univr.hadoop.mapreduce.multidim;
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
-import it.univr.hadoop.util.WritablePrimitiveMapper;
-import it.univr.util.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -21,7 +18,7 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.pow;
 import static java.lang.String.format;
 
-public class MultiDimMapper <V extends ContextData> extends MultiBaseMapper {
+public class MultiDimMapper <V extends ContextData> extends MultiBaseMapper<Text, V> {
 
     static final Logger LOGGER = LogManager.getLogger(MultiDimMapper.class);
 
@@ -51,8 +48,7 @@ public class MultiDimMapper <V extends ContextData> extends MultiBaseMapper {
                     keyBuilder.append("-");
                 });
         keyBuilder.deleteCharAt(keyBuilder.length()-1);
-
-        context.write(new Text(keyBuilder.toString()), contextData);
+        context.write(new Text(keyBuilder.toString()), (V) contextData);
     }
 
 

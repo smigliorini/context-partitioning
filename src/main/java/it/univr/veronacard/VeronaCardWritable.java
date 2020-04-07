@@ -1,6 +1,7 @@
 package it.univr.veronacard;
 
 import it.univr.hadoop.ContextData;
+import org.apache.hadoop.io.Text;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -43,21 +44,25 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeUTF(vcSerial);
+        new Text(vcSerial).write(out);
         out.writeDouble(x);
         out.writeDouble(y);
         out.writeLong(time);
-        out.writeUTF(poiName);
+        new Text(poiName).write(out);
         out.writeInt(age);
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        vcSerial = in.readUTF();
+        Text serial = new Text();
+        serial.readFields(in);
+        vcSerial = serial.toString();
         x = in.readDouble();
         y = in.readDouble();
         time = in.readLong();
-        poiName = in.readUTF();
+        Text poi = new Text();
+        poi.readFields(in);
+        poiName = poi.toString();
         age = in.readInt();
     }
 
@@ -73,9 +78,5 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
         return super.hashCode();
     }
 
-    @Override
-    protected VeronaCardWritable clone(){
-        return new VeronaCardWritable(this);
-    }
 
 }

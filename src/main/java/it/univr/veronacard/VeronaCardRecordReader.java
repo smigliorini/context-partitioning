@@ -18,7 +18,6 @@ public class VeronaCardRecordReader<V extends VeronaCardWritable> extends CSVRec
     protected Pair<LongWritable, V> parseLine(String line) {
         VeronaCardWritable record = new VeronaCardWritable(DataUtils.parseRecord(line, CSVRecordReader.DEFAULT_SEPARATOR));
         LongWritable key = new LongWritable(reader.getCurrentKey().get());
-
         return new Pair(key, record);
     }
 
