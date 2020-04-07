@@ -44,11 +44,10 @@ public class MultiDimMapper <V extends ContextData> extends MultiBaseMapper {
     @Override
     protected void map(LongWritable key, ContextData contextData, Context context) throws IOException, InterruptedException {
         StringBuilder keyBuilder = new StringBuilder("part-");
-        //TODO does it make sense to use a string as key instead a long, as sum of all realative values?
         Stream.of(contextData.getContextFields())
                 .forEach(property -> {
-                    //TODO do we format the long.
-                    keyBuilder.append(propertyOperationPartition(property, contextData, context.getConfiguration()));
+                    long value = propertyOperationPartition(property, contextData, context.getConfiguration());
+                    keyBuilder.append(format(keyFormat, value));
                     keyBuilder.append("-");
                 });
         keyBuilder.deleteCharAt(keyBuilder.length()-1);

@@ -23,6 +23,9 @@ import static java.lang.String.format;
 public abstract class MultiBaseMapper <K extends WritableComparable, V extends ContextData> extends Mapper<LongWritable, ContextData, K, V> {
 
     private static final Logger BASE_LOGGER = LogManager.getLogger(MultiDimMapper.class);
+    protected static final String KEY_STRING_FORMAT =  "%%0%sd";
+    protected String keyFormat;
+
 
     protected HashMap<String, Pair<Double, Double>> map;
     protected int numCellPerSide;
@@ -38,6 +41,7 @@ public abstract class MultiBaseMapper <K extends WritableComparable, V extends C
         BASE_LOGGER.info(format("Power Index %f", powerIndex));
         numCellPerSide = (int) ceil( pow(splitNumberFiles, powerIndex));
         BASE_LOGGER.info(format("Num cell per side is: %d", numCellPerSide));
+        keyFormat = String.format( KEY_STRING_FORMAT, (int) Math.ceil( numCellPerSide ));
     }
 
     @Override
