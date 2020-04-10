@@ -142,7 +142,6 @@ public class PartUtils {
         int numSplits = (int)
                 ( ( p.length() / splitSize ) +
                         ( ( p.length() % splitSize > 0 ) ? 1 : 0 ) );
-
         int m = numSplits;
         int d = 0;
         while( m >  0 ){
@@ -150,16 +149,13 @@ public class PartUtils {
           d += 1;
         }
         final String splitTemplate = format( "%%s-%%0%sd", d );
-
         try( BufferedReader br = new BufferedReader( new FileReader( p ) ) ) {
           long size = 0L;
           int i = 0;
-
           BufferedWriter bw = new BufferedWriter
                   ( new FileWriter
                           ( new File
                                   ( outputDir, format( splitTemplate, p.getName(), i ) ) ) );
-
           String line;
           while( ( line = br.readLine() ) != null ){
             final String value = String.format( "%s%n", line );
@@ -171,11 +167,9 @@ public class PartUtils {
                                       ( outputDir, format( splitTemplate, p.getName(), ++i ) ) ) );
               size = 0L;
             }
-
             bw.write( value );
             size += value.getBytes().length;
           }
-
           bw.close();
         }
         p.delete();
@@ -211,7 +205,7 @@ public class PartUtils {
 
     if( !input.exists() || !input.isFile() ) {
       throw new IllegalArgumentException
-        ( format( "The input \"%s\" is not a file.", input.getAbsolutePath() ) );
+              ( format( "The input \"%s\" is not a file.", input.getAbsolutePath() ) );
     }
 
     if( !outputDir.exists() || !outputDir.isDirectory() ) {
@@ -288,7 +282,7 @@ public class PartUtils {
 
     if( !input.exists() || !input.isFile() ) {
       throw new IllegalArgumentException
-        ( format( "The input \"%s\" is not a file.", input.getAbsolutePath() ) );
+              ( format( "The input \"%s\" is not a file.", input.getAbsolutePath() ) );
     }
 
     if( !outputDir.exists() || !outputDir.isDirectory() ) {
@@ -306,22 +300,22 @@ public class PartUtils {
     final double widthSidePartT = ((double)( boundaries.getMaxT() - boundaries.getMinT() )) / numCellPerSide;
     final double widthSidePartA = ((double)( boundaries.getMaxAge() - boundaries.getMinAge() )) / numCellPerSide;
 
-    final String xFormat = String.format( "%%0%sd", numCellPerSide );
-    final String yFormat = String.format( "%%0%sd", numCellPerSide );
-    final String tFormat = String.format( "%%0%sd", numCellPerSide );
-    final String aFormat = String.format( "%%0%sd", numCellPerSide );
+    final String xFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
+    final String yFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
+    final String tFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
+    final String aFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
 
     final String partTemplate =
-      partPrefix +
-      xFormat + "-" + yFormat + "-" +
-      tFormat + "-" + aFormat;
+            partPrefix +
+                    xFormat + "-" + yFormat + "-" +
+                    tFormat + "-" + aFormat;
 
     // --- assign the grid keys and save a temporary file ----------------------
 
     final Set<String> keySet = new HashSet<String>();
 
     try( BufferedReader br = new BufferedReader( new FileReader( input ) ) ) {
-        try( BufferedWriter wr = new BufferedWriter( new FileWriter( tempFile ) ) ) {
+      try( BufferedWriter wr = new BufferedWriter( new FileWriter( tempFile ) ) ) {
 
         String line;
         while( ( line = br.readLine() ) != null ) {
@@ -362,14 +356,14 @@ public class PartUtils {
           final String key = format( partTemplate, xPart, yPart, tPart, aPart );
           keySet.add( key );
 
-          wr.write( format( "%s,%s%n", key, line ) );//write in the file the entire kei and value.
+          wr.write( format( "%s,%s%n", key, line ) );
         }
       }
     }
 
     // --- write the final index -----------------------------------------------
 
-    try( BufferedReader br = new BufferedReader( new FileReader( tempFile ) ) ) { //tempFiles contains the indexes
+    try( BufferedReader br = new BufferedReader( new FileReader( tempFile ) ) ) {
       final Map<String, BufferedWriter> bwMap = new HashMap<>();
       final Iterator<String> it = keySet.iterator();
 
@@ -404,11 +398,11 @@ public class PartUtils {
       if( p.length() > splitSize ) {
         // number of splits
         int numSplits = (int)
-          ( ( p.length() / splitSize ) +
-            ( ( p.length() % splitSize > 0 ) ? 1 : 0 ) );
+                ( ( p.length() / splitSize ) +
+                        ( ( p.length() % splitSize > 0 ) ? 1 : 0 ) );
 
         int m = numSplits;
-        int d = 0; //number of digits necessary
+        int d = 0;
         while( m >  0 ){
           m = numSplits / 10;
           d += 1;
@@ -420,9 +414,9 @@ public class PartUtils {
           int i = 0;
 
           BufferedWriter bw = new BufferedWriter
-            ( new FileWriter
-                ( new File
-                    ( outputDir, format( splitTemplate, p.getName(), i ) ) ) );
+                  ( new FileWriter
+                          ( new File
+                                  ( outputDir, format( splitTemplate, p.getName(), i ) ) ) );
 
           String line;
           while( ( line = br.readLine() ) != null ){
@@ -430,9 +424,9 @@ public class PartUtils {
             if( size + value.getBytes().length > splitSize ){
               bw.close();
               bw = new BufferedWriter
-                ( new FileWriter
-                    ( new File
-                        ( outputDir, format( splitTemplate, p.getName(), ++i ) ) ) );
+                      ( new FileWriter
+                              ( new File
+                                      ( outputDir, format( splitTemplate, p.getName(), ++i ) ) ) );
               size = 0L;
             }
 
@@ -497,11 +491,11 @@ public class PartUtils {
     final double numDimensions = 1.0 / 4;
     final int numCellPerSide = (int) ceil( pow( numPartitions, numDimensions ));
 
-    final String tFormat = String.format( "%%0%sd", (int) Math.ceil( numCellPerSide ) );
-    final String xFormat = String.format( "%%0%sd", (int) Math.ceil( numCellPerSide ) );
-    final String yFormat = String.format( "%%0%sd", (int) Math.ceil( numCellPerSide ) );
-    final String aFormat = String.format( "%%0%sd", (int) Math.ceil( numCellPerSide ) );
 
+    final String xFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
+    final String yFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
+    final String tFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
+    final String aFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
     // --- assign the grid keys and save a temporary file ----------------------
 
     final List<String> lines = FileUtils.readLines( input, false );
@@ -656,16 +650,16 @@ public class PartUtils {
     }
 
     // --- write the final index -----------------------------------------------
+
     for( String k : aParts.keySet() ){
       try(  BufferedWriter bw = new BufferedWriter( new FileWriter( new File( outputDir, k ) ) ) ) {
-        for( VeronaCardRecord r : aParts.get(k )) {
+        for( VeronaCardRecord r :aParts.get(k )) {
           bw.write(format("%s%n", r.toString( separator )));
         }
       }
     }
 
     // --- check split dimensions ----------------------------------------------
-
 
     final File[] partitions = outputDir.listFiles();
     for( File p : partitions ) {

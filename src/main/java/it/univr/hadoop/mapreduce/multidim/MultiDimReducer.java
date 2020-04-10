@@ -8,10 +8,11 @@ import org.apache.hadoop.io.WritableComparable;
 
 import java.io.IOException;
 
-public class MultiDimReducer<K extends WritableComparable, V extends ContextData> extends MultiBaseReducer <K, V> {
+public class MultiDimReducer<K extends WritableComparable, VIN extends ContextData, VOUT extends ContextData>
+        extends MultiBaseReducer <K, VIN, VOUT> {
 
     @Override
-    protected void reduce(K key, Iterable<V> values, Context context) throws IOException, InterruptedException {
+    protected void reduce(K key, Iterable<VIN> values, Context context) throws IOException, InterruptedException {
         super.reduce(key, values, context);
     }
 

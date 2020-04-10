@@ -49,6 +49,7 @@ public class TextPairWritable implements WritableComparable<TextPairWritable> {
     public int hashCode() {
         return first.hashCode() * 163 + second.hashCode();
     }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof TextPairWritable) {
@@ -59,8 +60,12 @@ public class TextPairWritable implements WritableComparable<TextPairWritable> {
     }
     @Override
     public String toString() {
+        if(second.toString().isBlank())
+            return first.toString();
         return first + "\t" + second;
     }
+
+
     @Override
     public int compareTo(TextPairWritable tp) {
         int cmp = first.compareTo(tp.first);

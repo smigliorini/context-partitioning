@@ -4,6 +4,7 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.mapreduce.multidim.MultiDimReducer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -13,10 +14,11 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.stream.StreamSupport;
 
-public abstract class MultiBaseReducer<K extends WritableComparable, V extends ContextData> extends Reducer<K, V, NullWritable, Text> {
+public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN extends Writable, VOUT extends Writable>
+        extends Reducer<KEYIN, VIN, NullWritable, VOUT> {
 
     private static final Logger BASE_LOGGER = LogManager.getLogger(MultiBaseReducer.class);
-    protected MultipleOutputs<NullWritable, Text> multipleOutputs;
+    protected MultipleOutputs<NullWritable, Writable> multipleOutputs;
 
     @Override
     protected void setup(Context context) {
@@ -24,11 +26,11 @@ public abstract class MultiBaseReducer<K extends WritableComparable, V extends C
     }
 
     @Override
-    protected void reduce(K key, Iterable<V> values, Context context) throws IOException, InterruptedException {
+    protected void reduce(KEYIN key, Iterable<VIN> values, Context context) throws IOException, InterruptedException {
 
         StreamSupport.stream(values.spliterator(), false).forEach(data -> {
             try {
-                multipleOutputs.write(NullWritable.get(), new Text(data.toString()), key.toString());
+                multipleOutputs.write(NullWritable.get(), data, key.toString());
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
                 BASE_LOGGER.warn(e.getMessage());

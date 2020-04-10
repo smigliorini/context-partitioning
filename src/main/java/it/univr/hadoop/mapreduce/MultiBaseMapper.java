@@ -20,7 +20,8 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.pow;
 import static java.lang.String.format;
 
-public abstract class MultiBaseMapper <K extends WritableComparable, V extends ContextData> extends Mapper<LongWritable, ContextData, K, V> {
+public abstract class MultiBaseMapper <KEYIN, VALUEIN ,
+            KEYOUT extends WritableComparable, VOUT> extends Mapper<KEYIN, VALUEIN, KEYOUT, VOUT> {
 
     private static final Logger BASE_LOGGER = LogManager.getLogger(MultiDimMapper.class);
     protected static final String KEY_STRING_FORMAT =  "%%0%sd";
@@ -37,27 +38,24 @@ public abstract class MultiBaseMapper <K extends WritableComparable, V extends C
         Long contextSetDim = OperationConf.getContextSetDim(context.getConfiguration());
         map = new HashMap<>(contextSetDim.intValue());
         final double powerIndex = 1.0 / contextSetDim;
-        BASE_LOGGER.info(format("Splits are %d", splitNumberFiles));
-        BASE_LOGGER.info(format("Power Index %f", powerIndex));
+        BASE_LOGGER.debug(format("Splits are %d", splitNumberFiles));
+        BASE_LOGGER.debug(format("Power Index %f", powerIndex));
         numCellPerSide = (int) ceil( pow(splitNumberFiles, powerIndex));
-        BASE_LOGGER.info(format("Num cell per side is: %d", numCellPerSide));
-        keyFormat = String.format( KEY_STRING_FORMAT, (int) Math.ceil( numCellPerSide ));
+        BASE_LOGGER.debug(format("Num cell per side is: %d", numCellPerSide));
+        keyFormat = String.format( KEY_STRING_FORMAT, numCellPerSide == 0 ? 1 : numCellPerSide);
     }
 
     @Override
-    protected void map(LongWritable key, ContextData value, Context context) throws IOException, InterruptedException {
+    protected void map(KEYIN key, VALUEIN value, Context context) throws IOException, InterruptedException {
 
     }
 
-    //Key
     protected long propertyOperationPartition (String property, ContextData contextData, Configuration configuration) {
         Pair<Double, Double> minMax = map.get(property);
         if (minMax == null) {
             minMax = OperationConf.getMinMax(property, configuration);
             map.put(property, minMax);
         }
-
-        //TODO how to manage data types? Assuming every context field as Double compatible
         Double min = minMax.getLeft();
         Double max = minMax.getRight();
         Double width = (max - min) / numCellPerSide;

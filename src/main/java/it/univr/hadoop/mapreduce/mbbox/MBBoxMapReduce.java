@@ -143,6 +143,6 @@ public class MBBoxMapReduce {
             Pair<ContextData, ContextData> maxMinContextData = Pair.of(minContextData.get(), maxContextData.get());
             return maxMinContextData;
         }
-        return Pair.of(null, null);
+        return null;
     }
 }
