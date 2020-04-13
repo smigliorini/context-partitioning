@@ -42,6 +42,7 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
         StreamSupport.stream(values.spliterator(), false).forEach(data -> {
             try {
                 foreachOperation(key ,data);
+                //write intermediate data to next mapper
                 multipleOutputs.write(key, data, key.toString());
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -50,8 +51,10 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
         });
     }
 
+
     @Override
     protected void foreachOperation(Text key, VIN data) {
+        //calculate max and min for the next property, this operation save a new map reduce task (MBB)
         if(nextProperty.isEmpty()) {
             List<String> strings = Arrays.asList(data.getContextFields());
             int i = strings.indexOf(propertyName);
@@ -72,6 +75,7 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+        //Once finished write minimum maximum values with the associated split key.
         if(!nextProperty.isEmpty()) {
             for (Pair<String,String> key : minMax.keySet()) {
                 Pair<Double, Double> doubleDoublePair = minMax.get(key);

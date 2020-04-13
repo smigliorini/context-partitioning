@@ -35,7 +35,6 @@ public class MultiDimMapper <V extends ContextData> extends ContextBasedMapper<L
             long value = propertyOperationPartition(property, contextData, context.getConfiguration());
             keyBuilder.append(format(keyFormat, value));
             keyBuilder.append("-");
-
         }
         keyBuilder.deleteCharAt(keyBuilder.length()-1);
         context.write(new Text(keyBuilder.toString()), (V) contextData);

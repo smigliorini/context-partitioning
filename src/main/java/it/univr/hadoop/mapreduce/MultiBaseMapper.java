@@ -48,6 +48,14 @@ public abstract class MultiBaseMapper <KEYIN, VALUEIN ,
     protected void map(KEYIN key, VALUEIN value, Context context) throws IOException, InterruptedException {
     }
 
+    /**
+     * Calculate and retrieve the cell position of the property data inside the grid.
+     * @param property
+     * @param contextData
+     * @param configuration
+     * @return
+     * @throws IOException
+     */
     protected long propertyOperationPartition (String property, ContextData contextData, Configuration configuration) throws IOException {
         Pair<Double, Double> minMax = getMinMax(property, configuration);
         Double value = readPropertyValue(property, contextData);

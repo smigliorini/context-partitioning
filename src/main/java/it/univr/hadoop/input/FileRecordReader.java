@@ -65,7 +65,6 @@ import java.io.IOException;
     public synchronized void close() throws IOException {
         if(reader != null) {
             reader.close();
-
         }
     }
 }

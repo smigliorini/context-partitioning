@@ -20,9 +20,8 @@ public abstract  class ContextBasedInputFormat<K, V extends ContextData> extends
     @Override
     public List<InputSplit> getSplits(JobContext job) throws IOException {
         List<InputSplit> splits = super.getSplits(job);
-        if(OperationConf.getSplitNumberFiles(job.getConfiguration()) < 1)
-            OperationConf.setSplitNumberFiles(job.getConfiguration(), splits.size());
-        LOGGER.info(format("Splits number are: %d", splits.size()));
+        OperationConf.setSplitNumberFiles(job.getConfiguration(), splits.size());
+        LOGGER.debug(format("Splits number are: %d", splits.size()));
         return splits;
     }
 }

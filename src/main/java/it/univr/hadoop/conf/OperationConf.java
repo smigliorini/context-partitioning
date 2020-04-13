@@ -23,7 +23,8 @@ import static java.lang.String.format;
 
 public class OperationConf extends Configuration {
     public static final Logger LOGGER = LogManager.getLogger(OperationConf.class);
-    public static final String CELL_SIDE_PROPERTY = "cell-side";
+
+    //TODO maybe is better to arrenge all these mappers, reducers parameters with json serializatio in a string property.
     public static final String SPLIT_NUMBER_FILES = "split-number-files";
     public static final String CONTEXT_SET_DIM = "ctx-set-dim";
     public static final String MIN_PROPERTY_FIELD = "Min";
@@ -51,7 +52,7 @@ public class OperationConf extends Configuration {
             hContextBasedConf = Optional.of((HContexBasedConf) unmarshaller.unmarshal(getClass().getClassLoader()
                     .getResource("conf.xml")));
         } catch (JAXBException e) {
-            LOGGER.error("Can't load Hadoop Context based configuration");
+            LOGGER.error("Cannot load Hadoop Context based configuration");
             e.printStackTrace();
         }
 
@@ -96,7 +97,6 @@ public class OperationConf extends Configuration {
                 }
             }
         }
-
         return true;
     }
 

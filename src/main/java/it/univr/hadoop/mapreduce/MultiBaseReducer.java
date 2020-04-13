@@ -25,7 +25,6 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
 
     @Override
     protected void reduce(KEYIN key, Iterable<VIN> values, Context context) throws IOException, InterruptedException {
-
         StreamSupport.stream(values.spliterator(), false).forEach(data -> {
             try {
                 foreachOperation(key ,data);

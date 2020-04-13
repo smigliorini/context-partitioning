@@ -16,10 +16,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Counter;
-import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -40,6 +37,9 @@ import java.util.stream.Stream;
 import static java.lang.Math.ceil;
 import static java.lang.String.format;
 
+/**
+ * Main class to run a context based partition
+ */
 public class ContextBasedPartitioner {
     static final Logger LOGGER = LogManager.getLogger(ContextBasedPartitioner.class);
 
@@ -65,7 +65,7 @@ public class ContextBasedPartitioner {
         this.parserLineMethod = Pair.of(parserClass, parserLineMethodName);
     }
 
-    public long runPartitioner()
+    public void runPartitioner()
             throws IOException, ClassNotFoundException, InterruptedException {
         OperationConf config = new OperationConf(new GenericOptionsParser(args));
         OperationConf.setMultiLevelParser(parserLineMethod.getKey(), parserLineMethod.getRight(), config);
@@ -77,7 +77,6 @@ public class ContextBasedPartitioner {
         Pair<ContextData, ContextData> contextData = MBBoxMapReduce.runMBBoxMapReduce(config, inputFormatClass,
                 false);
         if(contextData != null) {
-            //TODO Passing a json string as parameter configuration could be another way to access to needed information from Reducer and Mappers.
             Job job = getJob(contextData.getLeft(), contextData.getRight(), config);
             //Mapper setup
             if(config.technique == PartitionTechnique.MD_GRID || config.technique == PartitionTechnique.BOX_COUNT) {
@@ -89,7 +88,7 @@ public class ContextBasedPartitioner {
             } else {
                 //PartitionTechnique.ML_GRID
                 runMultiLevelPartitioner(job, config, contextData.getLeft());
-                return 0;
+                return;
             }
 
             //output
@@ -98,12 +97,9 @@ public class ContextBasedPartitioner {
 
             //job
             job.waitForCompletion(true);
-            Counters counters = job.getCounters();
-            Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);
-            return outputRecordCounter.getValue();
+            return;
         }
         LOGGER.warn("No data found");
-        return 0;
     }
 
     //Configure and get Job made by commons information for every partition technique
@@ -150,7 +146,15 @@ public class ContextBasedPartitioner {
         job.setReducerClass(MultiDimReducer.class);
     }
 
-    // Run multi level partition technique by creating temporary files and folders, for each attribute partition.
+    /**
+     * Run multi level partition technique by creating temporary files and folders, for each attribute partition.
+     * @param job
+     * @param config
+     * @param contextData
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     */
     private void runMultiLevelPartitioner(Job job, OperationConf config, ContextData contextData)
             throws IOException, ClassNotFoundException, InterruptedException {
         Class<?> mapOutputValueClass = ContextData.class;
@@ -230,6 +234,13 @@ public class ContextBasedPartitioner {
     private void configureBoxCountPartitioner(Job job) {
     }
 
+    /**
+     * Configure split size by loading conf configuration file.
+     * Furthermore calculate number of splits needed.
+     * @param config
+     * @param job
+     * @throws IOException
+     */
     private void configureSplitSize(OperationConf config, Job job) throws IOException {
         if(config.hContextBasedConf.isPresent()) {
             Long splitSize = config.hContextBasedConf.get().getSplitSize(config.technique);
@@ -245,14 +256,14 @@ public class ContextBasedPartitioner {
                     totalSize += fileSystem.getFileStatus(fileInputPath).getLen();
                     LOGGER.warn("File size is " + fileSystem.getFileStatus(fileInputPath).getLen());
                 }
+                // Plus 1 cause of coherence with input format class, which return number of splits
                 splitNumberFiles = (int) ceil(totalSize / splitSize) +1 ;
                 OperationConf.setSplitNumberFiles(config, splitNumberFiles);
                 LOGGER.info(format("Splits number are: %d", splitNumberFiles));
             }
         } else {
-            //mapreduce.input.fileinputformat.split.minsize
+          //TODO Possible alternative for default split size from Hadoop system
         }
-
     }
 
 }

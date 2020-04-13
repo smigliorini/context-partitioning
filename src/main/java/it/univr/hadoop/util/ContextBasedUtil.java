@@ -17,6 +17,11 @@ import java.util.Optional;
 public class ContextBasedUtil {
     final static Logger LOGGER = LogManager.getLogger(ContextBasedUtil.class);
 
+    /**
+     * Retrieve a new instance of a implemented (concrete) ContextData class, calculated from generic types of the InputFormat class passed.
+     * @param inputFormatClass
+     * @return
+     */
     public static Optional<? extends ContextData> getContextDataInstanceFromInputFormat(Class< ? extends FileInputFormat> inputFormatClass) {
         //Retrieve InputFormat information to process the data and return a Context data value holder of the range.
         Type genericSuperclass = inputFormatClass.getGenericSuperclass();
@@ -34,6 +39,11 @@ public class ContextBasedUtil {
         return Optional.empty();
     }
 
+    /**
+     * Retrieve a implemented (concrete) ContextData class, calculated from generic types of the InputFormat class passed.
+     * @param inputFormatClass
+     * @return
+     */
     public static Optional<Class<? extends ContextData>> getContextDataClassFromInputFormat(Class< ? extends FileInputFormat> inputFormatClass) {
         //Retrieve InputFormat information to process the data and return a Context data value holder of the range.
         Type genericSuperclass = inputFormatClass.getGenericSuperclass();
@@ -55,8 +65,6 @@ public class ContextBasedUtil {
         else
             value = Double.valueOf(propertyValue.toString());
         return value;
-
     }
-
 
 }
