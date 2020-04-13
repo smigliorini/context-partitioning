@@ -13,9 +13,20 @@ import org.apache.hadoop.io.WritableComparable;
  */
 public interface ContextData extends Writable, WritableComparable<ContextData> {
 
+    String PARSE_RECORD_METHOD = "parseRecord";
+
     /**
      * Retrieve the context fields name, used by the partition technique. The order correspond to index order.
      */
     String[] getContextFields();
+
+    /**
+     * Read a line and parse It to ContextData Object
+     * Method added cause of Multi-level grid partitioning needs to read raw-data from reducer text output format, made by
+     * intermediate map-reduce for temporary files.
+     * @param line
+     * @return
+     */
+    ContextData parseRecord (String line);
 
 }

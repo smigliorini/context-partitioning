@@ -80,7 +80,7 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
         return super.hashCode();
     }
 
-    public static VeronaCardWritable parseRecord(String line) {
+    public VeronaCardWritable parseRecord(String line) {
         VeronaCardRecord veronaCardRecord = DataUtils.parseRecord(line, SPLITERATOR);
         return new VeronaCardWritable(veronaCardRecord);
     }

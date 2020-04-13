@@ -45,30 +45,27 @@ public class ContextBasedPartitioner {
 
     String[] args;
     Class<? extends FileInputFormat> inputFormatClass;
-    Pair<Class, String> parserLineMethod;
 
     /**
      *
      * @param args
      * @param inputFormatClass
-     * @param parserClass  Used by the Multi-level partitioning technique to find a method which parses a
-     *                     line of input string from raw-data into a Context Data object.
-     * @param parserLineMethodName Name method of the string line parser provided from parserClass (@param parserClass).
-     *                             Both attributes are mandatory for Multi-level partitioning technique.
-     *
      */
 
-    public ContextBasedPartitioner(String[] args, Class<? extends FileInputFormat> inputFormatClass, Class parserClass,
-                                   String parserLineMethodName) {
+    public ContextBasedPartitioner(String[] args, Class<? extends FileInputFormat> inputFormatClass) {
         this.args = args;
         this.inputFormatClass = inputFormatClass;
-        this.parserLineMethod = Pair.of(parserClass, parserLineMethodName);
     }
 
     public void runPartitioner()
             throws IOException, ClassNotFoundException, InterruptedException {
         OperationConf config = new OperationConf(new GenericOptionsParser(args));
-        OperationConf.setMultiLevelParser(parserLineMethod.getKey(), parserLineMethod.getRight(), config);
+
+        //retrieve input format output class.
+        Class<? extends ContextData> concreteDataClass = ContextBasedUtil
+                .getContextDataClassFromInputFormat(inputFormatClass).get();
+
+        OperationConf.setMultiLevelParser(concreteDataClass, ContextData.PARSE_RECORD_METHOD, config);
         if(!config.validInputOutputFiles()) {
             LOGGER.error("Invalid input files");
             System.exit(1);
