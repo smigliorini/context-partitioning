@@ -32,16 +32,26 @@ PARTITION_TECHNIQUE:
 By default the application use MD_GRID  
 
 
-outputPath: path to the output directory. The directory is created from the application as Hadoop standard application, hence It has not to be already in the FS. When the output path is not provided the application automaticcally will create a an out directory in the input's directory.
+outputPath: path to the output directory. The directory is created from the application as Hadoop standard application, hence It has not to be already present in the FS. When the output path is not provided the application automaticcally will create a new out directory in the input's directory.
 
 
 ##### Command Examples
 Context based run running command:  
-`hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
-Context based running command by passing hadoop standard reduce tasks configuration:  
-`hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
-Minimum Bounding Box running run command:  
-`hadoop it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
+- `hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
+
+
+Context based running command by passing hadoop standard reduce tasks configuration: 
+- `hadoop it.univr.veronacard.VeronaMapReducePartitioner -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`
+
+
+Multi level running command
+- `hadoop it.univr.veronacard.VeronaMapReducePartitioner ML test/test_partitioning/vc_ticket_space_time_transf.csv test/ML`
+Multi dimensional running command
+- `hadoop it.univr.veronacard.VeronaMapReducePartitioner ML test/test_partitioning/vc_ticket_space_time_transf.csv test/MD`
+
+
+Minimum Bounding Box run command:
+- `hadoop it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce -Dmapred.reduce.tasks=110 test/test_partitioning/vc_ticket_space_time_transf.csv`  
 
 
 
