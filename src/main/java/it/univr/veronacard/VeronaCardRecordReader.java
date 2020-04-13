@@ -1,5 +1,6 @@
 package it.univr.veronacard;
 
+import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.input.FileRecordReader;
 import it.univr.partitioning.DataUtils;
 import org.apache.commons.math3.util.Pair;

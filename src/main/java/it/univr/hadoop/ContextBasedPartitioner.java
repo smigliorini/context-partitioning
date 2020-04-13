@@ -47,16 +47,26 @@ public class ContextBasedPartitioner {
     Class<? extends FileInputFormat> inputFormatClass;
     Pair<Class, String> parserLineMethod;
 
-    public ContextBasedPartitioner(String[] args, Class<? extends FileInputFormat> inputFormatClass,
-                                   Pair< Class, String> parserLineMethod) {
+    /**
+     *
+     * @param args
+     * @param inputFormatClass
+     * @param parserClass  Used by the Multi-level partitioning technique to find a method which parses a
+     *                     line of input string from raw-data into a Context Data object.
+     * @param parserLineMethodName Name method of the string line parser provided from parserClass (@param parserClass).
+     *                             Both attributes are mandatory for Multi-level partitioning technique.
+     *
+     */
+
+    public ContextBasedPartitioner(String[] args, Class<? extends FileInputFormat> inputFormatClass, Class parserClass,
+                                   String parserLineMethodName) {
         this.args = args;
         this.inputFormatClass = inputFormatClass;
-        this.parserLineMethod = parserLineMethod;
+        this.parserLineMethod = Pair.of(parserClass, parserLineMethodName);
     }
 
     public long runPartitioner()
             throws IOException, ClassNotFoundException, InterruptedException {
-        //LogManager.getRootLogger().setLevel(Level.WARN);
         OperationConf config = new OperationConf(new GenericOptionsParser(args));
         OperationConf.setMultiLevelParser(parserLineMethod.getKey(), parserLineMethod.getRight(), config);
         if(!config.validInputOutputFiles()) {
@@ -96,6 +106,7 @@ public class ContextBasedPartitioner {
         return 0;
     }
 
+    //Configure and get Job made by commons information for every partition technique
     private Job getJob(ContextData minContextDataValue, ContextData maxContextDataValue, OperationConf config) throws IOException {
         //TODO Passing a json string as parameter configuration could be another way to access to needed information from Reducer and Mappers.
         String[] contextFields = minContextDataValue.getContextFields();
@@ -118,7 +129,6 @@ public class ContextBasedPartitioner {
         Job job = Job.getInstance(config, "CBMR");
         job.setJarByClass(ContextBasedPartitioner.class);
 
-
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);
         configureSplitSize(config, job);
@@ -140,6 +150,7 @@ public class ContextBasedPartitioner {
         job.setReducerClass(MultiDimReducer.class);
     }
 
+    // Run multi level partition technique by creating temporary files and folders, for each attribute partition.
     private void runMultiLevelPartitioner(Job job, OperationConf config, ContextData contextData)
             throws IOException, ClassNotFoundException, InterruptedException {
         Class<?> mapOutputValueClass = ContextData.class;
@@ -148,9 +159,9 @@ public class ContextBasedPartitioner {
             mapOutputValueClass = present.get();
         }
         int i = 0;
-        Path lastOutputPath = config.getOutputPath();
-        OperationConf.setMultiLevelOutputPath(lastOutputPath.toUri().getPath(), config);
-        LOGGER.warn("INITIAL LAST OUTPUT PATH " + lastOutputPath.getName());
+        Path directoryOutputPath = config.getOutputPath();
+        OperationConf.setMultiLevelOutputPath(directoryOutputPath.toUri().getPath(), config);
+
         for (String propertyName : contextData.getContextFields()) {
             job.setMapOutputKeyClass(Text.class);
             job.setMapOutputValueClass(mapOutputValueClass);
@@ -170,29 +181,10 @@ public class ContextBasedPartitioner {
             if(!completed)
                 break;
             i++;
-            //////////////////////////Delete last output and prepare new job
+            //Prepare new job for the next partition level
             if(i < contextData.getContextFields().length) {
-                //TODO READ MAX MIN
                 OperationConf.setMultiLevelMapperProperty(contextData.getContextFields()[i], config);
                 FileSystem fileSystem = FileSystem.get(config);
-                Optional<FileStatus> minMaxFile = Stream.of(fileSystem.listStatus(outputPath)).filter(file -> !file.isDirectory()
-                        && file.getPath().getName().contains(MultiLevelMiddleReducer.MINMAX_FILE_NAME))
-                        .findFirst();
-                if(minMaxFile.isPresent()){
-                    /*FileStatus fileStatus = minMaxFile.get();
-                    KeyValueLineRecordReader reader = new KeyValueLineRecordReader(config,
-                            new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
-                    Text key = reader.createKey();
-                    Text value = reader.createValue();
-                    reader.next(key, value);
-                    LOGGER.warn("Min is : " + value.toString());
-                    OperationConf.setMinProperty(config, contextData.getContextFields()[i], Double.valueOf(value.toString()));
-                    reader.next(key, value);
-                    LOGGER.warn("Max is : " + value.toString());
-                    OperationConf.setMaxProperty(config, contextData.getContextFields()[i], Double.valueOf(value.toString()));
-                    reader.close();*/
-                    //fileSystem.delete(fileStatus.getPath(), false);
-                }
                 LOGGER.warn("Next property is: " + OperationConf.getMultiLevelMapperProperty(config));
                 job = Job.getInstance(config, "CBMR");
                 job.setJarByClass(ContextBasedPartitioner.class);
@@ -203,7 +195,7 @@ public class ContextBasedPartitioner {
                         .filter(p -> p.getName().contains(MultiLevelGridMapper.START_CAPTION_FILE))
                         .collect(Collectors.toList()));
                 config.setFileInputPaths(newInputs);
-                config.setOutputDirectory(lastOutputPath);
+                config.setOutputDirectory(directoryOutputPath);
                 LOGGER.warn("LAST OUT OUTPATH " + config.getOutputPath().toUri().getPath());
                 Path[] filePaths = new Path[newInputs.size()];
                 newInputs.toArray(filePaths);
@@ -211,15 +203,26 @@ public class ContextBasedPartitioner {
                 FileInputFormat.setInputPaths(job, filePaths);
                 job.setInputFormatClass(KeyValueTextInputFormat.class);
             } else {
-                //TODO MOVE FILE TO
+                //Move result to the right output folder and delete all tmp folders
                 FileSystem fileSystem = FileSystem.get(config);
+
                 List<Path> tmpFolders = Stream.of(fileSystem.listStatus(config.getOutputPath()))
-                        .filter(FileStatus::isDirectory).map(FileStatus::getPath).collect(Collectors.toList());
-                Path[] files = Stream.of(fileSystem.listStatus(outputPath)).map(FileStatus::getPath).toArray(Path[]::new);
-                /*fileSystem.moveFromLocalFile(files, config.getOutputPath());
+                        .filter(FileStatus::isDirectory)
+                        .map(FileStatus::getPath)
+                        .filter(p -> !p.getName().contains(propertyName))
+                        .collect(Collectors.toList());
                 for(Path folder : tmpFolders) {
                     fileSystem.delete(folder, true);
-                }*/
+                }
+
+                FileStatus directoryData = Stream.of(fileSystem.listStatus(config.getOutputPath()))
+                        .filter(FileStatus::isDirectory)
+                        .findFirst().get();
+
+                Path[] filesToMove = Stream.of(fileSystem.listStatus(directoryData.getPath())).filter(FileStatus::isFile)
+                        .map(FileStatus::getPath).toArray(Path[]::new);
+                fileSystem.moveFromLocalFile(filesToMove, config.getOutputPath());
+                fileSystem.delete(directoryData.getPath(), false);
             }
         }
     }

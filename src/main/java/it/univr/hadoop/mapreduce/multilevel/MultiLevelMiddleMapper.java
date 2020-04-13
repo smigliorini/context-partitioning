@@ -87,6 +87,7 @@ public class MultiLevelMiddleMapper extends MultiBaseMapper<Text, Text, Text, Co
     protected Pair<Double, Double> getMinMax(String key, Configuration configuration) throws IOException {
         Pair<Double, Double> doubleDoublePair = hashMap.get(key);
         if(doubleDoublePair == null) {
+            //Retrieve data information from the last middle mapper, to take information about the max min of the current property
             String outputPath = OperationConf.getMultiLevelOutputPath(configuration);
             FileSystem fileSystem = FileSystem.get(configuration);
             Path path = new Path(outputPath, previousProperty);

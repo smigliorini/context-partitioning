@@ -23,7 +23,6 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
         VIN, VOUT> {
 
     private final Logger LOGGER = LogManager.getLogger(MultiLevelMiddleReducer.class);
-
     String propertyName;
     Optional<String> nextProperty;
     HashMap<Pair<String, String>, Pair<Double, Double>> minMax;
@@ -69,7 +68,6 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
             Double max = Math.max(doubleDoublePair.getRight(), value);
             minMax.put(hashKey, Pair.of(min, max));
         }
-
     }
 
     @Override
