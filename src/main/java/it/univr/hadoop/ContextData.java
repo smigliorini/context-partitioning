@@ -1,6 +1,7 @@
 package it.univr.hadoop;
 
 
+import it.univr.veronacard.VeronaCardRecord;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 

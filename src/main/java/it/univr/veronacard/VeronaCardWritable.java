@@ -1,6 +1,7 @@
 package it.univr.veronacard;
 
 import it.univr.hadoop.ContextData;
+import it.univr.partitioning.DataUtils;
 import org.apache.hadoop.io.Text;
 
 import java.io.DataInput;
@@ -9,6 +10,7 @@ import java.io.IOException;
 
 public class VeronaCardWritable extends VeronaCardRecord implements ContextData {
 
+    public static String SPLITERATOR = ",";
 
     public VeronaCardWritable (){
         super();
@@ -76,6 +78,11 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
     public int hashCode() {
         //TODO Read documentation Hadoop about hash calculation
         return super.hashCode();
+    }
+
+    public static VeronaCardWritable parseRecord(String line) {
+        VeronaCardRecord veronaCardRecord = DataUtils.parseRecord(line, SPLITERATOR);
+        return new VeronaCardWritable(veronaCardRecord);
     }
 
 

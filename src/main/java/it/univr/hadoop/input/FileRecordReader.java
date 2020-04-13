@@ -3,7 +3,6 @@ package it.univr.hadoop.input;
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -11,18 +10,17 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 
 import java.io.IOException;
 
-public abstract class CSVRecordReader<K extends WritableComparable, V extends Writable> extends RecordReader<LongWritable, V> {
+    public abstract class FileRecordReader< V extends Writable> extends RecordReader<LongWritable, V> {
 
-    public static final String DEFAULT_DELIMITER = "\"";
     public static final String DEFAULT_SEPARATOR = ",";
 
-    protected K key;
+    protected LongWritable key;
     protected V value;
 
     protected LineRecordReader reader;
     protected long linesRead;
 
-    public CSVRecordReader() {
+    public FileRecordReader() {
         super();
         this.reader = new LineRecordReader();
 
@@ -36,7 +34,7 @@ public abstract class CSVRecordReader<K extends WritableComparable, V extends Wr
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
         if(reader.nextKeyValue()) {
-            Pair<K, V> tuple = parseLine(reader.getCurrentValue().toString());
+            Pair<LongWritable, V> tuple = parseLine(reader.getCurrentValue().toString());
             key = tuple.getKey();
             value = tuple.getValue();
             return true;
@@ -45,7 +43,7 @@ public abstract class CSVRecordReader<K extends WritableComparable, V extends Wr
         return false;
     }
 
-    protected abstract Pair<K, V> parseLine(String line);
+    protected abstract Pair<LongWritable, V> parseLine(String line);
 
 
     @Override

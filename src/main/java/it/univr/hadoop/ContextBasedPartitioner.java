@@ -7,22 +7,21 @@ import it.univr.hadoop.mapreduce.multidim.MultiDimMapper;
 import it.univr.hadoop.mapreduce.multidim.MultiDimReducer;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelGridMapper;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelGridReducer;
-import it.univr.hadoop.mapreduce.multilevel.MultiLevelItemChainMapper;
+import it.univr.hadoop.mapreduce.multilevel.MultiLevelMiddleMapper;
+import it.univr.hadoop.mapreduce.multilevel.MultiLevelMiddleReducer;
 import it.univr.hadoop.util.ContextBasedUtil;
-import it.univr.hadoop.writable.TextPairWritable;
 import it.univr.util.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobCounter;
-import org.apache.hadoop.mapreduce.lib.chain.ChainMapper;
-import org.apache.hadoop.mapreduce.lib.chain.ChainReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -31,24 +30,35 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.Vector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.lang.Math.ceil;
+import static java.lang.String.format;
 
 public class ContextBasedPartitioner {
     static final Logger LOGGER = LogManager.getLogger(ContextBasedPartitioner.class);
 
     String[] args;
     Class<? extends FileInputFormat> inputFormatClass;
+    Pair<Class, String> parserLineMethod;
 
-    public ContextBasedPartitioner(String[] args, Class<? extends FileInputFormat> inputFormatClass) {
+    public ContextBasedPartitioner(String[] args, Class<? extends FileInputFormat> inputFormatClass,
+                                   Pair< Class, String> parserLineMethod) {
         this.args = args;
         this.inputFormatClass = inputFormatClass;
+        this.parserLineMethod = parserLineMethod;
     }
 
     public long runPartitioner()
             throws IOException, ClassNotFoundException, InterruptedException {
         //LogManager.getRootLogger().setLevel(Level.WARN);
         OperationConf config = new OperationConf(new GenericOptionsParser(args));
+        OperationConf.setMultiLevelParser(parserLineMethod.getKey(), parserLineMethod.getRight(), config);
         if(!config.validInputOutputFiles()) {
             LOGGER.error("Invalid input files");
             System.exit(1);
@@ -58,7 +68,6 @@ public class ContextBasedPartitioner {
                 false);
         if(contextData != null) {
             //TODO Passing a json string as parameter configuration could be another way to access to needed information from Reducer and Mappers.
-            String[] contextFields = contextData.getLeft().getContextFields();
             Job job = getJob(contextData.getLeft(), contextData.getRight(), config);
             //Mapper setup
             if(config.technique == PartitionTechnique.MD_GRID || config.technique == PartitionTechnique.BOX_COUNT) {
@@ -69,7 +78,8 @@ public class ContextBasedPartitioner {
                 }
             } else {
                 //PartitionTechnique.ML_GRID
-                configureMultiLevelPartitioner(job, config, contextFields.length);
+                runMultiLevelPartitioner(job, config, contextData.getLeft());
+                return 0;
             }
 
             //output
@@ -82,7 +92,7 @@ public class ContextBasedPartitioner {
             Counter outputRecordCounter = counters.findCounter(JobCounter.TOTAL_LAUNCHED_REDUCES);
             return outputRecordCounter.getValue();
         }
-        LOGGER.warn("No found data");
+        LOGGER.warn("No data found");
         return 0;
     }
 
@@ -99,22 +109,19 @@ public class ContextBasedPartitioner {
             Double min = Double.valueOf(minValue.toString());
             OperationConf.setMinProperty(config, property, min);
             OperationConf.setMaxProperty(config, property, max);
+
         });
+        if(config.technique.equals(PartitionTechnique.ML_GRID)) {
+            OperationConf.setMultiLevelMapperProperty(contextFields[0], config);
+        }
 
         Job job = Job.getInstance(config, "CBMR");
         job.setJarByClass(ContextBasedPartitioner.class);
-        //set Split size configuration
 
-        config.hContextBasedConf.ifPresentOrElse(customConf -> {
-            Long splitSize = customConf.getSplitSize(config.technique);
-            FileInputFormat.setMinInputSplitSize(job, splitSize);
-            FileInputFormat.setMaxInputSplitSize(job, splitSize);
-        }, () -> {
-            //mapreduce.input.fileinputformat.split.minsize
-        });
 
         Path[] inputPaths = new Path[config.getFileInputPaths().size()];
         config.getFileInputPaths().toArray(inputPaths);
+        configureSplitSize(config, job);
         FileInputFormat.setInputPaths(job, inputPaths);
         job.setInputFormatClass(inputFormatClass);
         return job;
@@ -133,24 +140,116 @@ public class ContextBasedPartitioner {
         job.setReducerClass(MultiDimReducer.class);
     }
 
-    private void configureMultiLevelPartitioner(Job job, OperationConf config, int contextFields) throws IOException {
-        //PartitionTechnique.ML_GRID
+    private void runMultiLevelPartitioner(Job job, OperationConf config, ContextData contextData)
+            throws IOException, ClassNotFoundException, InterruptedException {
+        Class<?> mapOutputValueClass = ContextData.class;
         Optional<Class<? extends ContextData>> present = ContextBasedUtil.getContextDataClassFromInputFormat(inputFormatClass);
-
-        ChainMapper.addMapper(job, MultiLevelGridMapper.class, LongWritable.class, present.get(),
-                TextPairWritable.class, present.get(), config);
-        //set intermediate mappers
-        for(int i=1; i < contextFields; i++) {
-            ChainMapper.addMapper(job, MultiLevelItemChainMapper.class, TextPairWritable.class, present.get(),
-                    TextPairWritable.class, present.get(), config);
+        if(present.isPresent()) {
+            mapOutputValueClass = present.get();
         }
-
-        ChainReducer.setReducer(job, MultiLevelGridReducer.class, TextPairWritable.class, present.get(),
-                NullWritable.class, present.get(), config);
+        int i = 0;
+        Path lastOutputPath = config.getOutputPath();
+        OperationConf.setMultiLevelOutputPath(lastOutputPath.toUri().getPath(), config);
+        LOGGER.warn("INITIAL LAST OUTPUT PATH " + lastOutputPath.getName());
+        for (String propertyName : contextData.getContextFields()) {
+            job.setMapOutputKeyClass(Text.class);
+            job.setMapOutputValueClass(mapOutputValueClass);
+            if(i == 0)
+                job.setMapperClass(MultiLevelGridMapper.class);
+            else
+                job.setMapperClass(MultiLevelMiddleMapper.class);
+            if(i == contextData.getContextFields().length -1)
+                job.setReducerClass(MultiLevelGridReducer.class);
+            else
+                job.setReducerClass(MultiLevelMiddleReducer.class);
+            LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+            Path outputPath = new Path(config.getOutputPath(), propertyName);
+            FileOutputFormat.setOutputPath(job, outputPath);
+            LOGGER.warn(outputPath.toUri().getPath());
+            boolean completed = job.waitForCompletion(true);
+            if(!completed)
+                break;
+            i++;
+            //////////////////////////Delete last output and prepare new job
+            if(i < contextData.getContextFields().length) {
+                //TODO READ MAX MIN
+                OperationConf.setMultiLevelMapperProperty(contextData.getContextFields()[i], config);
+                FileSystem fileSystem = FileSystem.get(config);
+                Optional<FileStatus> minMaxFile = Stream.of(fileSystem.listStatus(outputPath)).filter(file -> !file.isDirectory()
+                        && file.getPath().getName().contains(MultiLevelMiddleReducer.MINMAX_FILE_NAME))
+                        .findFirst();
+                if(minMaxFile.isPresent()){
+                    /*FileStatus fileStatus = minMaxFile.get();
+                    KeyValueLineRecordReader reader = new KeyValueLineRecordReader(config,
+                            new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
+                    Text key = reader.createKey();
+                    Text value = reader.createValue();
+                    reader.next(key, value);
+                    LOGGER.warn("Min is : " + value.toString());
+                    OperationConf.setMinProperty(config, contextData.getContextFields()[i], Double.valueOf(value.toString()));
+                    reader.next(key, value);
+                    LOGGER.warn("Max is : " + value.toString());
+                    OperationConf.setMaxProperty(config, contextData.getContextFields()[i], Double.valueOf(value.toString()));
+                    reader.close();*/
+                    //fileSystem.delete(fileStatus.getPath(), false);
+                }
+                LOGGER.warn("Next property is: " + OperationConf.getMultiLevelMapperProperty(config));
+                job = Job.getInstance(config, "CBMR");
+                job.setJarByClass(ContextBasedPartitioner.class);
+                configureSplitSize(config, job);
+                Vector<Path> newInputs = new Vector<>(Arrays.stream(fileSystem.listStatus(outputPath))
+                        .filter(f -> f.isFile())
+                        .map(f -> f.getPath())
+                        .filter(p -> p.getName().contains(MultiLevelGridMapper.START_CAPTION_FILE))
+                        .collect(Collectors.toList()));
+                config.setFileInputPaths(newInputs);
+                config.setOutputDirectory(lastOutputPath);
+                LOGGER.warn("LAST OUT OUTPATH " + config.getOutputPath().toUri().getPath());
+                Path[] filePaths = new Path[newInputs.size()];
+                newInputs.toArray(filePaths);
+                LOGGER.warn(Arrays.stream(filePaths).map(Path::toString).collect(Collectors.joining(", ")));
+                FileInputFormat.setInputPaths(job, filePaths);
+                job.setInputFormatClass(KeyValueTextInputFormat.class);
+            } else {
+                //TODO MOVE FILE TO
+                FileSystem fileSystem = FileSystem.get(config);
+                List<Path> tmpFolders = Stream.of(fileSystem.listStatus(config.getOutputPath()))
+                        .filter(FileStatus::isDirectory).map(FileStatus::getPath).collect(Collectors.toList());
+                Path[] files = Stream.of(fileSystem.listStatus(outputPath)).map(FileStatus::getPath).toArray(Path[]::new);
+                /*fileSystem.moveFromLocalFile(files, config.getOutputPath());
+                for(Path folder : tmpFolders) {
+                    fileSystem.delete(folder, true);
+                }*/
+            }
+        }
     }
 
     private void configureBoxCountPartitioner(Job job) {
     }
 
+    private void configureSplitSize(OperationConf config, Job job) throws IOException {
+        if(config.hContextBasedConf.isPresent()) {
+            Long splitSize = config.hContextBasedConf.get().getSplitSize(config.technique);
+            FileInputFormat.setMinInputSplitSize(job, splitSize);
+            FileInputFormat.setMaxInputSplitSize(job, splitSize);
+
+            int splitNumberFiles = OperationConf.getSplitNumberFiles(job.getConfiguration());
+            if(splitNumberFiles < 0) {
+                //If split number not yet set
+                FileSystem fileSystem = FileSystem.get(config);
+                long totalSize = 0;
+                for (Path fileInputPath : config.getFileInputPaths()) {
+                    totalSize += fileSystem.getFileStatus(fileInputPath).getLen();
+                    LOGGER.warn("File size is " + fileSystem.getFileStatus(fileInputPath).getLen());
+                }
+                splitNumberFiles = (int) ceil(totalSize / splitSize) +1 ;
+                OperationConf.setSplitNumberFiles(config, splitNumberFiles);
+                LOGGER.info(format("Splits number are: %d", splitNumberFiles));
+            }
+        } else {
+            //mapreduce.input.fileinputformat.split.minsize
+        }
+
+    }
 
 }

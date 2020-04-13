@@ -1,4 +1,4 @@
-package it.univr.hadoop.mapreduce.multilevel;
+package it.univr.hadoop.mapreduce.multilevel.old;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
@@ -36,9 +36,11 @@ public class MultiLevelItemChainMapper extends MultiBaseMapper<TextPairWritable,
         if(contextFields.length > currentPropertyPos +1) {
             outputKey = Pair.of(keyBuilder.toString(), currentPropertyPos + 1);
             context.write(new TextPairWritable(outputKey.getLeft(), outputKey.getRight().toString()), value);
+            LOGGER.warn(format("OUTPUT CHAIN MAP is %s for val: %s", outputKey.getLeft(), value.toString()));
         } else {
             //LAST MAPPER
             context.write(new TextPairWritable(keyBuilder.toString(), ""), value);
+            LOGGER.warn(format("OUTPUT CHAIN MAP is %s for val: %s", keyBuilder.toString(), value.toString()));
         }
 
     }

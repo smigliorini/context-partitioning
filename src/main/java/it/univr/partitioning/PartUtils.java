@@ -490,7 +490,7 @@ public class PartUtils {
     final int numPartitions = (int) ceil( input.length() / splitSize );
     final double numDimensions = 1.0 / 4;
     final int numCellPerSide = (int) ceil( pow( numPartitions, numDimensions ));
-
+    System.out.println(numCellPerSide);
 
     final String xFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);
     final String yFormat = String.format( "%%0%sd", numCellPerSide == 0? 1: numCellPerSide);

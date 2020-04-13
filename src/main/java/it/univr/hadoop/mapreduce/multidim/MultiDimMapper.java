@@ -31,12 +31,12 @@ public class MultiDimMapper <V extends ContextData> extends ContextBasedMapper<L
     @Override
     protected void map(LongWritable key, ContextData contextData, Context context) throws IOException, InterruptedException {
         StringBuilder keyBuilder = new StringBuilder("part-");
-        Stream.of(contextData.getContextFields())
-                .forEach(property -> {
-                    long value = propertyOperationPartition(property, contextData, context.getConfiguration());
-                    keyBuilder.append(format(keyFormat, value));
-                    keyBuilder.append("-");
-                });
+        for (String property : contextData.getContextFields()) {
+            long value = propertyOperationPartition(property, contextData, context.getConfiguration());
+            keyBuilder.append(format(keyFormat, value));
+            keyBuilder.append("-");
+
+        }
         keyBuilder.deleteCharAt(keyBuilder.length()-1);
         context.write(new Text(keyBuilder.toString()), (V) contextData);
     }

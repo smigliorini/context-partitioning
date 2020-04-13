@@ -1,7 +1,5 @@
 package it.univr.hadoop.mapreduce;
 
-import it.univr.hadoop.ContextData;
-import it.univr.hadoop.mapreduce.multidim.MultiDimReducer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -18,7 +16,7 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
         extends Reducer<KEYIN, VIN, NullWritable, VOUT> {
 
     private static final Logger BASE_LOGGER = LogManager.getLogger(MultiBaseReducer.class);
-    protected MultipleOutputs<NullWritable, Writable> multipleOutputs;
+    protected MultipleOutputs<Writable, Writable> multipleOutputs;
 
     @Override
     protected void setup(Context context) {
@@ -30,6 +28,7 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
 
         StreamSupport.stream(values.spliterator(), false).forEach(data -> {
             try {
+                foreachOperation(key ,data);
                 multipleOutputs.write(NullWritable.get(), data, key.toString());
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -38,6 +37,7 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
         });
     }
 
+    protected void foreachOperation(KEYIN key, VIN data) {}
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {

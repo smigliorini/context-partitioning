@@ -132,7 +132,7 @@ public class MultiDimPartitioning {
 
     final File input = new File( dataDir, outFile );
     final List<String> lines = readLines( input, false );
-    final List<VeronaCardRecord> records = parseRecords( lines, separator );
+    final List<VeronaCardRecord> records = parseRecords( lines, separator);
 
     final Map<Integer,Integer> result = new HashMap<>();
     for( VeronaCardRecord r : records ){
@@ -179,7 +179,7 @@ public class MultiDimPartitioning {
 
 
     //generateRandomParts( input, new File( dataDir, randomPartDir ), splitSize, partPrefix );
-    //generateUniformMultiDimGridParts( input, new File( dataDir, mdGridPartDir ), splitSize, partPrefix, b, separator );
+    generateUniformMultiDimGridParts( input, new File( dataDir, mdGridPartDir ), splitSize, partPrefix, b, separator );
     generateUniformMultiLevelGridParts( input, new File( dataDir, mlGridPartDir ), splitSize, partPrefix, b, separator );
 
     final double[] timeSplits = new double[] {

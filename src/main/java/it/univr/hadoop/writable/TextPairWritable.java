@@ -9,29 +9,38 @@ import java.io.IOException;
 
 public class TextPairWritable implements WritableComparable<TextPairWritable> {
 
+    private static final String SPLITERATOR = ",";
+
     private Text first;
     private Text second;
 
     public TextPairWritable() {
         set(new Text(), new Text());
     }
+
+    public TextPairWritable(Text text) {
+        String[] split = text.toString().split(SPLITERATOR);
+        first = new Text(split[0]);
+        second = new Text(split[1]);
+    }
+
     public TextPairWritable(String first, String second) {
         set(new Text(first), new Text(second));
     }
+
     public TextPairWritable(Text first, Text second) {
         set(first, second);
     }
-
 
     public void set(Text first, Text second) {
         this.first = first;
         this.second = second;
     }
 
-
     public Text getFirst() {
         return first;
     }
+
     public Text getSecond() {
         return second;
     }
@@ -62,7 +71,7 @@ public class TextPairWritable implements WritableComparable<TextPairWritable> {
     public String toString() {
         if(second.toString().isBlank())
             return first.toString();
-        return first + "\t" + second;
+        return first + SPLITERATOR + second;
     }
 
 

@@ -1,6 +1,9 @@
 package it.univr.hadoop.util;
 
 import it.univr.hadoop.ContextData;
+import it.univr.hadoop.writable.TextPairWritable;
+import it.univr.util.ReflectionUtil;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -42,4 +45,18 @@ public class ContextBasedUtil {
         }
         return Optional.empty();
     }
+
+    public static Double getDouble(String propertyName, Object data) {
+        Object propertyValue = ReflectionUtil.readMethod(propertyName, data);
+        Double value;
+        if (propertyValue instanceof WritableComparable)
+            value = Double.valueOf(WritablePrimitiveMapper
+                    .getBeanFromWritable((WritableComparable) propertyValue).toString());
+        else
+            value = Double.valueOf(propertyValue.toString());
+        return value;
+
+    }
+
+
 }
