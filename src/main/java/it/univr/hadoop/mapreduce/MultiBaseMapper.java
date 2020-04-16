@@ -2,7 +2,6 @@ package it.univr.hadoop.mapreduce;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
-import it.univr.hadoop.mapreduce.multidim.MultiDimMapper;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
 import it.univr.util.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;

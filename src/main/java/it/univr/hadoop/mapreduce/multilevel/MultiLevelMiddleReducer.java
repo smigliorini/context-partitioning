@@ -6,6 +6,7 @@ import it.univr.hadoop.mapreduce.MultiBaseReducer;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.writable.TextPairWritable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -41,7 +42,7 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
     protected void reduce(Text key, Iterable<VIN> values, Context context) throws IOException, InterruptedException {
         StreamSupport.stream(values.spliterator(), false).forEach(data -> {
             try {
-                foreachOperation(key ,data);
+                foreachOperation(key ,data, context.getConfiguration());
                 //write intermediate data to next mapper
                 multipleOutputs.write(key, data, key.toString());
             } catch (IOException | InterruptedException e) {
@@ -53,7 +54,7 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
 
 
     @Override
-    protected void foreachOperation(Text key, VIN data) {
+    protected void foreachOperation(Text key, VIN data, Configuration configuration) {
         //calculate max and min for the next property, this operation save a new map reduce task (MBB)
         if(nextProperty.isEmpty()) {
             List<String> strings = Arrays.asList(data.getContextFields());

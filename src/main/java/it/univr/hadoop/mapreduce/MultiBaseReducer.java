@@ -1,7 +1,7 @@
 package it.univr.hadoop.mapreduce;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -17,6 +17,7 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
 
     private static final Logger BASE_LOGGER = LogManager.getLogger(MultiBaseReducer.class);
     protected MultipleOutputs<Writable, Writable> multipleOutputs;
+    public static String MASTER_FILE_NAME = "_master.grid";
 
     @Override
     protected void setup(Context context) {
@@ -27,8 +28,8 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
     protected void reduce(KEYIN key, Iterable<VIN> values, Context context) throws IOException, InterruptedException {
         StreamSupport.stream(values.spliterator(), false).forEach(data -> {
             try {
-                foreachOperation(key ,data);
                 multipleOutputs.write(NullWritable.get(), data, key.toString());
+                foreachOperation(key ,data, context.getConfiguration());
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
                 BASE_LOGGER.warn(e.getMessage());
@@ -36,10 +37,15 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
         });
     }
 
-    protected void foreachOperation(KEYIN key, VIN data) {}
+    protected void foreachOperation(KEYIN key, VIN data, Configuration configuration) {}
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+        masterOutputWriteTask(context.getConfiguration());
         multipleOutputs.close();
     }
+
+    protected void masterOutputWriteTask(Configuration configuration) throws IOException, InterruptedException {}
+
+
 }

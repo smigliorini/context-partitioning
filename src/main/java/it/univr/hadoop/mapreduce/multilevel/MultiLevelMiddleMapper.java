@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -91,21 +92,24 @@ public class MultiLevelMiddleMapper extends MultiBaseMapper<Text, Text, Text, Co
             String outputPath = OperationConf.getMultiLevelOutputPath(configuration);
             FileSystem fileSystem = FileSystem.get(configuration);
             Path path = new Path(outputPath, previousProperty);
-            FileStatus fileStatus = Arrays.stream(fileSystem.listStatus(path)).filter(f -> f.isFile() && f.getPath()
-                    .getName().contains(MultiLevelMiddleReducer.MINMAX_FILE_NAME)).findFirst().get();
-            KeyValueLineRecordReader reader = new KeyValueLineRecordReader(configuration,
-                    new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
-            Text keyReader = reader.createKey();
-            Text valueReader = reader.createValue();
-            while(reader.next(keyReader, valueReader)) {
-                TextPairWritable keypair = new TextPairWritable(keyReader);
-                TextPairWritable valuePair = new TextPairWritable(valueReader);
-                Text indexKey = keypair.getFirst();
-                if(indexKey.toString().equals(key)){
-                    Pair<Double, Double> newMinMax = Pair.of(Double.valueOf(valuePair.getFirst().toString()),
-                            Double.valueOf(valuePair.getSecond().toString()));
-                    hashMap.put(key, newMinMax);
-                    return newMinMax;
+            List<FileStatus> fileStatusList = Arrays.stream(fileSystem.listStatus(path)).filter(f -> f.isFile()
+                            && f.getPath().getName().contains(MultiLevelMiddleReducer.MINMAX_FILE_NAME)
+                    ).collect(Collectors.toList());
+            for(FileStatus fileStatus : fileStatusList) {
+                KeyValueLineRecordReader reader = new KeyValueLineRecordReader(configuration,
+                        new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), new String[0]));
+                Text keyReader = reader.createKey();
+                Text valueReader = reader.createValue();
+                while (reader.next(keyReader, valueReader)) {
+                    TextPairWritable keypair = new TextPairWritable(keyReader);
+                    TextPairWritable valuePair = new TextPairWritable(valueReader);
+                    Text indexKey = keypair.getFirst();
+                    if (indexKey.toString().equals(key)) {
+                        Pair<Double, Double> newMinMax = Pair.of(Double.valueOf(valuePair.getFirst().toString()),
+                                Double.valueOf(valuePair.getSecond().toString()));
+                        hashMap.put(key, newMinMax);
+                        return newMinMax;
+                    }
                 }
             }
         }

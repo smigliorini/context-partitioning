@@ -9,6 +9,7 @@ import it.univr.hadoop.mapreduce.multilevel.MultiLevelGridMapper;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelGridReducer;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelMiddleMapper;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelMiddleReducer;
+import it.univr.hadoop.output.ContextBasedTextOutputFormat;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.util.ReflectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -89,7 +90,7 @@ public class ContextBasedPartitioner {
             }
 
             //output
-            LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+            LazyOutputFormat.setOutputFormatClass(job, ContextBasedTextOutputFormat.class);
             FileOutputFormat.setOutputPath(job, config.getOutputPath());
 
             //job
@@ -117,7 +118,9 @@ public class ContextBasedPartitioner {
         });
         if(config.technique.equals(PartitionTechnique.ML_GRID)) {
             OperationConf.setMultiLevelMapperProperty(contextFields[0], config);
+            OperationConf.setMultiLevelOutputPath(config.getOutputPath().toUri().getPath(), config);
         }
+        OperationConf.setMasterFileEnabled(config,true);
 
         Job job = Job.getInstance(config, "CBMR");
         job.setJarByClass(ContextBasedPartitioner.class);
@@ -161,7 +164,6 @@ public class ContextBasedPartitioner {
         }
         int i = 0;
         Path directoryOutputPath = config.getOutputPath();
-        OperationConf.setMultiLevelOutputPath(directoryOutputPath.toUri().getPath(), config);
 
         for (String propertyName : contextData.getContextFields()) {
             job.setMapOutputKeyClass(Text.class);
@@ -170,11 +172,13 @@ public class ContextBasedPartitioner {
                 job.setMapperClass(MultiLevelGridMapper.class);
             else
                 job.setMapperClass(MultiLevelMiddleMapper.class);
-            if(i == contextData.getContextFields().length -1)
+            if(i == contextData.getContextFields().length -1) {
                 job.setReducerClass(MultiLevelGridReducer.class);
-            else
+                LazyOutputFormat.setOutputFormatClass(job, ContextBasedTextOutputFormat.class);
+            } else {
                 job.setReducerClass(MultiLevelMiddleReducer.class);
-            LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+                LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+            }
             Path outputPath = new Path(config.getOutputPath(), propertyName);
             FileOutputFormat.setOutputPath(job, outputPath);
             LOGGER.warn(outputPath.toUri().getPath());

@@ -33,6 +33,7 @@ public class OperationConf extends Configuration {
     public static final String MULTI_LEVEL_PARSER_METHOD_NAME = "multi-level-parse-method-name";
     public static final String MULTI_LEVEL_PARSER_CLASS = "multi-level-parse-class";
     public static final String MULTI_LEVEL_OUTPUT_PATH = "multi-level-outputpath";
+    public static final String MASTER_FILE_ENABLED = "master-file-enabled";
 
     public Optional<HContexBasedConf> hContextBasedConf;
     public Vector<Path> fileInputPaths;
@@ -44,6 +45,7 @@ public class OperationConf extends Configuration {
         super(genericOptionsParser.getConfiguration());
         initConfiguration(genericOptionsParser.getRemainingArgs());
     }
+
     private void initConfiguration(String ... args) {
         JAXBContext jaxbContext;
         try {
@@ -191,6 +193,14 @@ public class OperationConf extends Configuration {
 
     public static String getMultiLevelOutputPath(Configuration conf) {
         return conf.get(MULTI_LEVEL_OUTPUT_PATH);
+    }
+
+    public static boolean isMasterFileEnabled(Configuration configuration) {
+        return Boolean.parseBoolean(configuration.get(MASTER_FILE_ENABLED, "false"));
+    }
+
+    public static void setMasterFileEnabled(Configuration configuration, boolean enable) {
+        configuration.set(MASTER_FILE_ENABLED, String.valueOf(enable));
     }
 
 }

@@ -2,6 +2,7 @@ package it.univr.hadoop.mapreduce.multilevel;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
+import it.univr.hadoop.mapreduce.ContextBasedReducer;
 import it.univr.hadoop.mapreduce.MultiBaseReducer;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
@@ -21,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class MultiLevelGridReducer<VIN extends ContextData, VOUT extends ContextData> extends MultiBaseReducer<Text,
+public class MultiLevelGridReducer<VIN extends ContextData, VOUT extends ContextData> extends ContextBasedReducer<Text,
         VIN, VOUT> {
 
     private final Logger LOGGER = LogManager.getLogger(MultiLevelGridReducer.class);
