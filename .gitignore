@@ -1,8 +1,16 @@
+.DS_Store
 test/
 test/**
-.idea/
 target/
 *.iml
 src/main/java/META-INF/
 out/
 dependency-reduced-pom.xml
+build/
+build/**
+target/
+target/**
+libraries/
+libraries/**
+config/
+config/**
