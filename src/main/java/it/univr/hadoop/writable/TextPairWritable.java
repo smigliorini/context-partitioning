@@ -69,7 +69,7 @@ public class TextPairWritable implements WritableComparable<TextPairWritable> {
     }
     @Override
     public String toString() {
-        if(second.toString().isBlank())
+        if(second.toString().isEmpty() ) //.isBlank())
             return first.toString();
         return first + SPLITERATOR + second;
     }

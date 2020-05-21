@@ -56,7 +56,7 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
     @Override
     protected void foreachOperation(Text key, VIN data, Configuration configuration) {
         //calculate max and min for the next property, this operation save a new map reduce task (MBB)
-        if(nextProperty.isEmpty()) {
+        if(nextProperty.toString().isEmpty()) { // nextProperty.isEmpty()
             List<String> strings = Arrays.asList(data.getContextFields());
             int i = strings.indexOf(propertyName);
             nextProperty = Optional.of(strings.get(i + 1));
@@ -77,7 +77,7 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
         //Once finished write minimum maximum values with the associated split key.
-        if(!nextProperty.isEmpty()) {
+        if(!nextProperty.toString().isEmpty()) { // nextProperty.isEmpty()
             for (Pair<String,String> key : minMax.keySet()) {
                 Pair<Double, Double> doubleDoublePair = minMax.get(key);
                 TextPairWritable valuePair = new TextPairWritable(doubleDoublePair.getLeft().toString(),
