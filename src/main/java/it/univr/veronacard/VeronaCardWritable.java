@@ -26,7 +26,7 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
 
     @Override
     public String[] getContextFields() {
-        return new String[]{"time", "x", "y", "age"};
+        return new String[]{"x", "y", "time", "age"};
     }
 
     @Override
@@ -46,26 +46,30 @@ public class VeronaCardWritable extends VeronaCardRecord implements ContextData 
 
     @Override
     public void write(DataOutput out) throws IOException {
-        new Text(vcSerial).write(out);
+        //new Text(vcSerial).write(out);
         out.writeDouble(x);
         out.writeDouble(y);
-        out.writeLong(time);
-        new Text(poiName).write(out);
-        out.writeInt(age);
+        //out.writeLong(time);
+        out.writeDouble( time );
+        //new Text(poiName).write(out);
+        //out.writeInt(age);
+        out.writeDouble( age );
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        Text serial = new Text();
-        serial.readFields(in);
-        vcSerial = serial.toString();
+        //Text serial = new Text();
+        //serial.readFields(in);
+        //vcSerial = serial.toString();
         x = in.readDouble();
         y = in.readDouble();
-        time = in.readLong();
-        Text poi = new Text();
-        poi.readFields(in);
-        poiName = poi.toString();
-        age = in.readInt();
+        //time = in.readLong();
+        time = in.readDouble();
+        //Text poi = new Text();
+        //poi.readFields(in);
+        //poiName = poi.toString();
+        //age = in.readInt();
+        age = in.readDouble();
     }
 
     @Override

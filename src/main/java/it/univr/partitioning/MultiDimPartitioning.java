@@ -134,9 +134,9 @@ public class MultiDimPartitioning {
     final List<String> lines = readLines( input, false );
     final List<VeronaCardRecord> records = parseRecords( lines, separator);
 
-    final Map<Integer,Integer> result = new HashMap<>();
+    final Map<Double,Integer> result = new HashMap<>();
     for( VeronaCardRecord r : records ){
-      final int k = r.getAge() / 10;
+      final double k = r.getAge() / 10;
       Integer v = result.get( k );
       if( v == null ){
         v = 0;
@@ -150,10 +150,10 @@ public class MultiDimPartitioning {
                       + "NumRows%n",
               separator));
 
-      final List<Integer> keys = new ArrayList<Integer>(result.keySet());
+      final List<Double> keys = new ArrayList<>(result.keySet());
       Collections.sort(keys);
 
-      for (Integer k : keys) {
+      for (Double k : keys) {
         bw.write(String.format("%s%s"
                         + "%s"
                         + "%n",

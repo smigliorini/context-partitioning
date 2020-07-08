@@ -3,7 +3,7 @@ package it.univr.hadoop.mapreduce.multilevel.old;
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
 import it.univr.hadoop.writable.TextPairWritable;
-import org.apache.commons.lang3.tuple.Pair;
+import it.univr.util.Pair;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;

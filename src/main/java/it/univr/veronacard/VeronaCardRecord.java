@@ -15,9 +15,11 @@ public class VeronaCardRecord {
   protected String vcSerial;
   protected Double x;
   protected Double y;
-  protected Long time;
+  //protected Long time;
+  protected Double time;
   protected String poiName;
-  protected Integer age;
+  //protected Integer age;
+  protected Double age;
 
   public VeronaCardRecord() {
     vcSerial = null;
@@ -28,7 +30,7 @@ public class VeronaCardRecord {
     age = null;
   }
 
-  public VeronaCardRecord(String vcSerial, Double x, Double y, Long time, String poiName, Integer age) {
+  public VeronaCardRecord(String vcSerial, Double x, Double y, Double time, String poiName, Double age) {
     this.vcSerial = vcSerial;
     this.x = x;
     this.y = y;
@@ -38,7 +40,11 @@ public class VeronaCardRecord {
   }
 
   public VeronaCardRecord(VeronaCardRecord veronaCardRecord) {
-    this(veronaCardRecord.getVcSerial(), veronaCardRecord.getX(), veronaCardRecord.getY(), veronaCardRecord.getTime(), veronaCardRecord.getPoiName(),
+    this(veronaCardRecord.getVcSerial(),
+         veronaCardRecord.getX(),
+         veronaCardRecord.getY(),
+         veronaCardRecord.getTime(),
+         veronaCardRecord.getPoiName(),
             veronaCardRecord.getAge());
   }
 
@@ -67,12 +73,20 @@ public class VeronaCardRecord {
     this.y = y;
   }
 
-  public Long getTime() {
+  public Double getTime() {
     return time;
   }
 
-  public void setTime( Long time ) {
+  public void setTime( Double time ) {
     this.time = time;
+  }
+
+  public void setAge( Double age ) {
+    this.age = age;
+  }
+
+  public Double getAge() {
+    return age;
   }
 
   public String getPoiName() {
@@ -83,25 +97,26 @@ public class VeronaCardRecord {
     this.poiName = poiName;
   }
 
-  public Integer getAge() {
-    return age;
-  }
-
-  public void setAge( Integer age ) {
-    this.age = age;
-  }
-
   public String toString( String separator ){
     final StringBuilder sb = new StringBuilder();
-    sb.append( vcSerial );
-    sb.append( separator );
+    //sb.append( vcSerial );
+    //sb.append( separator );
     sb.append( x );
     sb.append( separator );
     sb.append( y );
     sb.append( separator );
     sb.append( time );
     sb.append( separator );
-    sb.append( poiName );
+    //sb.append( poiName );
+    //sb.append( separator );
+    sb.append( age );
+
+    // fix for producing the same format of the input
+    sb.append( x );
+    sb.append( separator );
+    sb.append( y );
+    sb.append( separator );
+    sb.append( time );
     sb.append( separator );
     sb.append( age );
     return sb.toString();
@@ -126,19 +141,21 @@ public class VeronaCardRecord {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(vcSerial);
-    builder.append(SPLITERATOR);
+    /*StringBuilder builder = new StringBuilder();
+    //builder.append(vcSerial);
+    //builder.append(SPLITERATOR);
     builder.append(x);
     builder.append(SPLITERATOR);
     builder.append(y);
     builder.append(SPLITERATOR);
     builder.append(time);
     builder.append(SPLITERATOR);
-    builder.append(poiName);
-    builder.append(SPLITERATOR);
+    //builder.append(poiName);
+    //builder.append(SPLITERATOR);
     builder.append(age);
-    return builder.toString();
+    return builder.toString();//*/
+
+    return toString( SPLITERATOR );
 
   }
 }

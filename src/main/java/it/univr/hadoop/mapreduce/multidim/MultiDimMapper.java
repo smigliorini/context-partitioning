@@ -4,7 +4,6 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.mapreduce.ContextBasedMapper;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;

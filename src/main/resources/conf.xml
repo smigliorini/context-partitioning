@@ -3,15 +3,15 @@
     <splitSizes>
         <entry>
             <key>ML_GRID</key>
-            <value>1048576</value>   <!--1024 * 1024-->
+            <value>134217728</value>   <!--1024 * 1024 * 128 -->
         </entry>
         <entry>
             <key>MD_GRID</key>
-            <value>1048576</value>   <!--1024 * 1024-->
+            <value>134217728</value>   <!--1024 * 1024 * 128 -->
         </entry>
         <entry>
             <key>CONTEXT_AWARE</key>
-            <value>1048576</value>   <!--1024 * 1024-->
+            <value>134217728</value>   <!--1024 * 1024 * 128 -->
         </entry>
     </splitSizes>
 </configuration>

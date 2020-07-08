@@ -23,29 +23,32 @@ import static java.lang.String.format;
 public class ContextBasedOutputCommitter extends FileOutputCommitter {
 
     private static Logger LOGGER = LogManager.getLogger(ContextBasedOutputCommitter.class);
+    private Path out;
 
     public ContextBasedOutputCommitter(Path outputPath, TaskAttemptContext context) throws IOException {
         super(outputPath, context);
+        out = outputPath;
     }
 
     public ContextBasedOutputCommitter(Path outputPath, JobContext context) throws IOException {
         super(outputPath, context);
+        out = outputPath;
     }
 
     @Override
     public void commitJob(JobContext context) throws IOException {
         super.commitJob(context);
 
-        Path outputPath = getOutputPath();
+        // Path outputPath = this.get;getOutputPath();
         FileSystem fileSystem = FileSystem.get(context.getConfiguration());
-        List<Path> resultFiles = Stream.of(fileSystem.listStatus(outputPath)).map(FileStatus::getPath)
+        List<Path> resultFiles = Stream.of(fileSystem.listStatus(out)).map(FileStatus::getPath)
                 .filter(p -> p.getName().contains(ContextBasedReducer.MASTER_FILE_NAME))
                 .sorted((p1, p2) -> p1.getName().compareTo(p2.getName())).collect(Collectors.toList());
 
         if(resultFiles.size() == 0) {
             LOGGER.warn("Master file not found");
         } else {
-            Path masterFile = new Path(outputPath, ContextBasedReducer.MASTER_FILE_NAME);
+            Path masterFile = new Path(out, ContextBasedReducer.MASTER_FILE_NAME);
             FSDataOutputStream outputStream = fileSystem.create(masterFile);
             final byte[] NEWLINE = new byte[] {'\n'};
             Text line = new Text();

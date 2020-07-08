@@ -4,7 +4,7 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
 import it.univr.hadoop.writable.TextPairWritable;
-import org.apache.commons.lang3.tuple.Pair;
+import it.univr.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;

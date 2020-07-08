@@ -418,7 +418,46 @@ public class DataUtils {
     final StringTokenizer tk = new StringTokenizer( line, separator );
     int i = 0;
 
-    while( tk.hasMoreTokens() ) {
+    // new version of the input file!
+    while( tk.hasMoreTokens() ){
+      final String token = tk.nextToken();
+      switch( i ){
+        case 0: // x
+          try {
+            r.setX( parseDouble( token ) );
+          } catch( NumberFormatException e ) {
+            r.setX( null );
+          }
+          i++;
+          break;
+        case 1: // y
+          try {
+            r.setY( parseDouble( token ) );
+          } catch( NumberFormatException e ) {
+            r.setY( null );
+          }
+          i++;
+          break;
+        case 2: // t
+          try {
+            r.setTime( Double.parseDouble( token ) );
+          } catch( NumberFormatException e ) {
+            r.setTime( null );
+          }
+          i++;
+          break;
+        case 3: // age
+          try {
+            r.setAge( Double.parseDouble( token ) );
+          } catch( NumberFormatException e ) {
+            r.setAge( null );
+          }
+          i++;
+          break;
+      }
+    }
+
+    /*while( tk.hasMoreTokens() ) {
       final String token = tk.nextToken();
       switch( i ) {
         case 0:
@@ -462,7 +501,11 @@ public class DataUtils {
           i++;
           break;
       }
-    }
+    }//*/
+
+    /*if( r.getTime() == null ){
+      System.out.printf( "here" );
+    }//*/
 
     return r;
   }

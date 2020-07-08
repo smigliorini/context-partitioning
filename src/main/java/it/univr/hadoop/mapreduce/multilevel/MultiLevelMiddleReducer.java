@@ -5,12 +5,11 @@ import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.mapreduce.MultiBaseReducer;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.writable.TextPairWritable;
-import org.apache.commons.lang3.tuple.Pair;
+import it.univr.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.checkerframework.checker.nullness.Opt;
 
 import javax.swing.text.html.Option;
 import java.io.IOException;

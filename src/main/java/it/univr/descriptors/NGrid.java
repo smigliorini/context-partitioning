@@ -1,8 +1,11 @@
 package it.univr.descriptors;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.lang.String.format;
 
 /**
  * @author Alberto Belussi
@@ -159,7 +162,7 @@ public class NGrid {
   /*
    * Calcola le coordinate della cella. id=0 => cella (1,1,1,...)
    */
-  public ArrayList<Long> getCellCoord( long id ) {
+  public ArrayList<Long> getCellCoords( long id ) {
     ArrayList<Long> res = new ArrayList<Long>( this.dim );
     long a = id;
     for( int i = 0; i < this.dim; i++ ) {
@@ -173,7 +176,7 @@ public class NGrid {
   /*
    * Calcola l'identificativo della cella. Cella iniziale (1,1,1,...) => id=0
    */
-  public long getCellNumber( ArrayList<Long> c ) {
+  public long getCellNumber( List<Long> c ) {
     long res = 0;
 
     for( int i = 0; i < this.dim; i++ )
@@ -245,12 +248,26 @@ public class NGrid {
 		endCol = (long)Math.ceil(Math.abs(mbrGeo.getMaxX() - x) / tileSide);
 		if (endCol == 0) endCol = 1;
 		startRow = (long)Math.ceil(Math.abs(mbrGeo.getMinY() - y) / tileSide);
-		if (startRow == 0) startRow = 1; 
+		if (startRow == 0) startRow = 1;
 		endRow = (long)Math.ceil(Math.abs(mbrGeo.getMaxY() - y) / tileSide);
 		if (endRow == 0) endRow = 1;
 		*/
 
     Long[] a = new Long[al.size()];
     return al.toArray( a );
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder();
+    sb.append( "origin: " );
+    for( int i = 0; i < dim; i++ ){
+      sb.append( orig.get( i ) + " " );
+    }
+    for( int i = 0; i < dim; i++ ){
+      sb.append( format( "size(%d)=%f ", i, size.get( i )));
+    }
+    sb.append( "tileside=" + tileSide );
+    return sb.toString();
   }
 }

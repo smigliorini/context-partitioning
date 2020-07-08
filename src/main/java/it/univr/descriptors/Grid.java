@@ -11,16 +11,18 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
+import static java.lang.String.format;
+
 /**
  * La classe genera una griglia uniforme.
- * 
+ *
  * @author Michele Reniero & Alberto Belussi
  */
 public class Grid {
 
 	/**Origin of the grid*/
 	protected Double x, y;
-	
+
 	/**End of the grid*/
 	protected double width, height;
 
@@ -34,21 +36,21 @@ public class Grid {
 	//protected double tileWidth, tileHeight;
 	protected double tileWidth, tileHeight;
 
-	/**Array of cells: la cella di indice zero corrisponde 
+	/**Array of cells: la cella di indice zero corrisponde
 	 * alla cella in basso a sinistra del MBR.
 	 * Ogni elemeto dell'array conta il numero di intersezioni
 	 * che tale cella ha con un poligono.
 	 */
-	//protected int[] cells; 
+	//protected int[] cells;
 
 	/**
 	 * Crea una griglia in base a MBR e lato della
 	 * cella.
-	 * 
+	 *
 	 * @param mbr minimum bonding rectangle
 	 * @param cellSide lato di ogni cella della griglia
 	 */
-	public Grid(Rectangle mbr, double cellSide) 
+	public Grid(Rectangle mbr, double cellSide)
 	{
 		this.x = mbr.x1;
 		this.y = mbr.y1;
@@ -58,38 +60,38 @@ public class Grid {
 		this.tileWidth = cellSide;
 		this.numRows = this.numColumns; // we force the grid to have numColumns = numRows
 		this.tileHeight	= mbr.getHeight()/this.numRows; // the cells might be rectangular
-		
+
 		// total number of cells
 		this.numTiles = this.numRows * this.numColumns;
-		
-		
+
+
 		// this.cells = new int[this.numTiles];
 		// long[] powers
 		//this.cells = new int[this.numTiles];
-		
+
 		//for( int i = 0; i < this.numTiles; i++)
 		//	this.cells[i] = 0;
 
 	}
-	
+
 	/**
 	 * Crea una griglia in base all'MBR fornito come stringa
 	 * e lato della cella.
-	 * 
+	 *
 	 * @param mbr minimo rettangolo che contiene tutte le geometrie
 	 * del job.
 	 * @param cellSide lato di ogni cella della griglia.
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
 	public Grid(String mbr, double cellSide)
 	{
 		Pattern p = Pattern.compile("(-?\\d+[.|,]\\d+)"); //originale
-		ArrayList<Double> al = new ArrayList<Double>(); 
-		
+		ArrayList<Double> al = new ArrayList<Double>();
+
 		//mbr = "\"POLYGON((-0,0100000 0,00000, -0,0100000 86,6125, 100,000 86,6125, 100,000 0,00000, -0,0100000 0,00000))\"";
 		//mbr = "Rectangle: (-0.01,0.0)-(100.0,86.6125)";
 		//mbr = "Rectangle: (-0.01,-0.01)-(99.99,99.99)";
-		
+
 		// mbr in WKT
 		if (mbr.contains("POLYGON"))
 		{
@@ -118,7 +120,7 @@ public class Grid {
 			while (m.find()) {
 				String tmp = m.group();
 				tmp = tmp.replace(',', '.');
-				al.add(new Double(tmp));	
+				al.add(new Double(tmp));
 			}
 			// al contiene tutte le cordinate
 			if (al.size() < 10) {
@@ -134,7 +136,7 @@ public class Grid {
 		}
 		this.numTiles = this.numRows * this.numColumns;
 		this.tileWidth = cellSide;
-		
+
 		//this.cells = new int[this.numTiles];
 		//for( int i = 0; i < this.numTiles; i++)
 		//	this.cells[i] = 0;
@@ -143,11 +145,11 @@ public class Grid {
 
 	/**
 	 * Il metodo verifica l'intersezione tra una cella della griglia
-	 * e la figura passata come parametro. Restituisce un vettore. 
-	 * 
+	 * e la figura passata come parametro. Restituisce un vettore.
+	 *
 	 * NOTA: The rectangle is considered open-ended. This means that
 	 * the right and top edge are outside the rectangle.
-	 * 
+	 *
 	 * @param shape figura
 	 * @return array con indice id della cella e valore il numero di
 	 * sovrapposizioni.
@@ -155,9 +157,9 @@ public class Grid {
 	public Long[] overlapPartitions(Geometry shape) {
 		if (shape == null)
 			return null;
-		
+
 		ArrayList<Long> al = new ArrayList<Long>();
-		
+
 		Geometry cell;
 		Envelope env, mbrGeo = shape.getEnvelopeInternal();
 		boolean simpl = false;
@@ -172,18 +174,18 @@ public class Grid {
 			shape = TopologyPreservingSimplifier.simplify(shape, tolerance);
 			System.out.println("simplification applied: " + shape.getNumPoints());
 		}
-		
+
 		long row, col;
 		long startRow, endRow, startCol, endCol;
 		double x1, x2, y1, y2;
-		
+
 		// introdotte celle rettangolari
 		startCol = (long)Math.ceil(Math.abs(mbrGeo.getMinX() - x) / this.tileWidth);
 		if (startCol == 0) startCol = 1;
 		endCol = (long)Math.ceil(Math.abs(mbrGeo.getMaxX() - x) / this.tileWidth);
 		if (endCol == 0) endCol = 1;
 		startRow = (long)Math.ceil(Math.abs(mbrGeo.getMinY() - y) / this.tileHeight);
-		if (startRow == 0) startRow = 1; 
+		if (startRow == 0) startRow = 1;
 		endRow = (long)Math.ceil(Math.abs(mbrGeo.getMaxY() - y) / this.tileHeight);
 		if (endRow == 0) endRow = 1;
 		long id, i = 1;
@@ -196,37 +198,37 @@ public class Grid {
 				x2 = x1 + this.tileWidth;
 				y1 = this.y + (row-1)*this.tileHeight;
 				y2 = y1 + this.tileHeight;
-				
+
 				// creo una envelope MBR e poi la converto in geometry
 				env = new Envelope(x1, x2, y1, y2);
 				cell = shape.getFactory().toGeometry(env);
-				
+
 				//System.out.println("cell: "+i++);
 				if (shape.intersects(cell)) {
 					id = this.getCellId(row, col);
 					al.add(id);
-				}		
+				}
 			}
 		if (simpl) System.out.println("#cell: "+i);
-		
+
 		Long[] a = new Long[al.size()];
 		return al.toArray(a);
 	}
-	
+
 	/**
 	 * Il metodo verifica l'intersezione tra una cella della griglia
-	 * e la figura passata come parametro. Restituisce un vettore 
-	 * per poter essere usato in Map/Reduce. Copiato dalla classe 
+	 * e la figura passata come parametro. Restituisce un vettore
+	 * per poter essere usato in Map/Reduce. Copiato dalla classe
 	 * GridPartitioner.
-	 * 
+	 *
 	 * NOTA: The rectangle is considered open-ended. This means that
 	 * the right and top edge are outside the rectangle.
-	 * 
+	 *
 	 * @param shape figura
 	 * @param l lista delle celle intersecate
 	 * @return array con indice id della cella e valore il numero di
 	 * sovrapposizioni.
-	 
+
 	public int[] overlapPartitionsBis(Shape shape) {
 		if (shape == null)
 			return null;
@@ -243,7 +245,7 @@ public class Grid {
 		for (int col = col1; col < col2; col++)
 			for (int row = row1; row < row2; row++)
 				cells[getCellNumber(col, row)] += 1;
-		
+
 		return cells;
 	}
 	*/
@@ -267,10 +269,10 @@ public class Grid {
 	{
 		return (cellID / this.numColumns);
 	}
-	
+
 	/*
 	 * Calcola l'identificativo della cella.
-	 * 
+	 *
 	 */
 	public long getCellId(long row, long col) {
 		return ((row-1) * numColumns) + (col-1);
@@ -282,14 +284,14 @@ public class Grid {
 	public long getRow(long id) {
 		return (id/numColumns + 1);
 	}
-	
+
 	/*
 	 * Calcola la colonna dato l'identificativo della cella.
 	 */
 	public long getCol(long id) {
 		return (id%numColumns + 1);
 	}
-	
+
 	/*
 	 * Calcola la distanza tra due celle.
 	 */
@@ -299,17 +301,30 @@ public class Grid {
 		c1 = getCol(cell1); c2 = getCol(cell2);
 		if (r1==r2)
 			return (long) (c1==c2?0:Math.abs(c1-c2)-1);
-		else 
+		else
 			return (long) ((c1==c2?0:Math.abs(c1-c2)-1)+Math.abs(r1-r2)-1);
 	}
-	
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append( format( "origin: %f %f ", this.x, this.y ));
+		sb.append( format( "wh=%f ", this.width ));
+		sb.append( format( "hg=%f ", this.height ));
+		sb.append( format( "cell size: %f, %f ",
+											 this.tileWidth, this.tileHeight ));
+		sb.append( format( "numCol: %d " + this.numColumns ));
+		sb.append( format(" numRow: %d " + this.numRows ));
+		return sb.toString();
+	}
+
 	/**
 	 * @param args
 	 */
 	@SuppressWarnings("javadoc")
 	public static void main(String[] args) {
-		
-		String mbr = "Rectangle: (-0.01,0.0)-(100.0,86.6125)"; 
+
+		String mbr = "Rectangle: (-0.01,0.0)-(100.0,86.6125)";
 		double cs = 100.0;
 		Grid griglia = new Grid(mbr, cs);
 		System.out.println("Parametri griglia:");
@@ -318,7 +333,7 @@ public class Grid {
 		System.out.println("num_rows: " + griglia.numRows);
 		System.out.println("width: " + griglia.width );
 		System.out.println("height: " + griglia.height );
-		
+
 		int col = 0;
 		int row = 0;
 		for (; col < griglia.numColumns; col++)
