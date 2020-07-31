@@ -26,6 +26,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.LogManager;
@@ -65,7 +66,6 @@ public class ContextBasedPartitioner {
 
   public ContextBasedPartitioner
   ( String[] args, Class<? extends FileInputFormat> inputFormatClass ) {
-
     this.args = args;
     this.inputFormatClass = inputFormatClass;
   }

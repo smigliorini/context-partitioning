@@ -8,10 +8,13 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import java.io.IOException;
 
-public class VeronaCardCSVInputFormat extends ContextBasedInputFormat<LongWritable, VeronaCardWritable> {
+public class VeronaCardCSVInputFormat
+  extends ContextBasedInputFormat<LongWritable, VeronaCardWritable> {
 
     @Override
-    public RecordReader createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
+    public RecordReader createRecordReader
+      (InputSplit split, TaskAttemptContext context)
+      throws IOException, InterruptedException {
         return new VeronaCardRecordReader();
     }
 }
