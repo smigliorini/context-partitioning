@@ -34,12 +34,12 @@ public class CSVWriter {
      * decide witch header to keep.
      *
      * @param flatJson      The List of key-value pairs generated from the JSON String
-     * @param withHeaders   True with header line, without header line otherwise
+     * @param withHeader   True with header line, without header line otherwise
      * @param headers       The header string to keep
      * @return a generated CSV string
      */
-    public static String getCSV(List<Map<String, String>> flatJson, boolean withHeaders, String[] headers) {
-        return getCSV(flatJson, withHeaders, headers);
+    public static String getCSV(List<Map<String, String>> flatJson, boolean withHeader, String[] headers) {
+        return getCSV(flatJson, withHeader, headers);
     }
 
     /**
@@ -48,15 +48,15 @@ public class CSVWriter {
      *
      * @param flatJson      The List of key-value pairs generated from the JSON String
      * @param separator     The separator can be: ',', ';' or '\t'
-     * @param withHeaders   True with header line, without header line otherwise
+     * @param withHeader   True with header line, without header line otherwise
      * @param headers       The header string to keep
      * @return a generated CSV string
      */
-    public static String getCSV(List<Map<String, String>> flatJson, String separator, boolean withHeaders, String[] headers) {
+    public static String getCSV(List<Map<String, String>> flatJson, String separator, boolean withHeader, String[] headers) {
         Set<String> headersSet = collectHeaders(flatJson, headers);
         StringBuilder csvString = new StringBuilder();
 
-        if (withHeaders) {
+        if (withHeader) {
             csvString = new StringBuilder(StringUtils.join(headersSet.toArray(), separator) + "\n");
         }
 
@@ -82,7 +82,6 @@ public class CSVWriter {
             headersSet = set;
         } else {
             for (String header : headers) {
-
                 if (set.contains(header)) {
                     headersSet.add(header);
                 } else {
@@ -135,11 +134,7 @@ public class CSVWriter {
      * @param fileName   The file to write (included the path)
      */
     public static void writeToFile(String csvString, String fileName) {
-        try {
-            FileUtils.write(new File(fileName), csvString, CHARSET_DEFAULT);
-        } catch (IOException e) {
-            LOGGER.error("CSVWriter#writeToFile(csvString, fileName) IOException: ", e);
-        }
+        writeToFile(csvString, fileName, CHARSET_DEFAULT);
     }
 
     /**

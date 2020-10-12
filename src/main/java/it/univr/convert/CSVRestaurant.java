@@ -13,8 +13,27 @@ import java.util.Map;
  * The CSVRestaurant class convert the list of key-value pairs to the pojo format
  */
 public class CSVRestaurant extends CSVWriter {
+
     static final Logger LOGGER = LogManager.getLogger(CSVRestaurant.class);
     public static final String SPLITERATOR = ",";
+
+    /**
+     * Enum Restaurant header for CSV
+     */
+    private enum Header {
+
+        building("address.building"), coordX("address.coord[1]"), coordY("address.coord[2]"),
+        street("address.street"), zipcode("address.zipcode"), borough("borough"),
+        cuisine("cuisine"), $date("date.$date"), grade("grade"),
+        score("score"), name("name"), restaurantId("restaurant_id");
+
+        private final String field;
+
+        /**
+         * Enum constructor
+         */
+        Header(String field) { this.field = field; }
+    }
 
     /**
      * Convert the given List of restaurant as a single grades and write to the given file without header line
@@ -34,11 +53,11 @@ public class CSVRestaurant extends CSVWriter {
      *
      * @param flatJson      The List of restaurant to convert
      * @param fileName      The file to write (included the path)
-     * @param withHeaders   True with header line, without header line otherwise
+     * @param withHeader   True with header line, without header line otherwise
      * @param headers       The header string to keep
      */
-    public static void write(List<Map<String, String>> flatJson, String fileName, boolean withHeaders, String[] headers) {
-        writeToFile(getCSV(createRestaurants(flatJson), SPLITERATOR, withHeaders, headers), fileName);
+    public static void write(List<Map<String, String>> flatJson, String fileName, boolean withHeader, String[] headers) {
+        writeToFile(getCSV(createRestaurants(flatJson), SPLITERATOR, withHeader, headers), fileName);
     }
 
     /**
@@ -69,22 +88,22 @@ public class CSVRestaurant extends CSVWriter {
         for (int i = 0; i < getArraySize(map.entrySet().toString(), "grades"); i++) {
             Map<String, String> restaurant = new LinkedHashMap<>();
 
-            restaurant.put(HeaderCsv.BUILDING.getField(), map.get(HeaderCsv.BUILDING.getField()));
-            restaurant.put(HeaderCsv.COORD_1.getField(), map.get(HeaderCsv.COORD_1.getField()));
-            restaurant.put(HeaderCsv.COORD_2.getField(), map.get(HeaderCsv.COORD_2.getField()));
-            restaurant.put(HeaderCsv.STREET.getField(), map.get(HeaderCsv.STREET.getField()));
-            restaurant.put(HeaderCsv.ZIPCODE.getField(), map.get(HeaderCsv.ZIPCODE.getField()));
+            restaurant.put(Header.building.name(), map.get(Header.building.field));
+            restaurant.put(Header.coordX.name(), map.get(Header.coordX.field));
+            restaurant.put(Header.coordY.name(), map.get(Header.coordY.field));
+            restaurant.put(Header.street.name(), map.get(Header.street.field));
+            restaurant.put(Header.zipcode.name(), map.get(Header.zipcode.field));
 
-            restaurant.put(HeaderCsv.BOROUGH.getField(), map.get(HeaderCsv.BOROUGH.getField()));
-            restaurant.put(HeaderCsv.CUISINE.getField(), map.get(HeaderCsv.CUISINE.getField()));
+            restaurant.put(Header.borough.name(), map.get(Header.borough.field));
+            restaurant.put(Header.cuisine.name(), map.get(Header.cuisine.field));
 
             String prefixGrades = "grades" + '[' + (i + 1) + ']' + '.';
-            restaurant.put(HeaderCsv.$DATE.getField(), map.get(prefixGrades + HeaderCsv.$DATE.getField()));
-            restaurant.put(HeaderCsv.GRADE.getField(), map.get(prefixGrades + HeaderCsv.GRADE.getField()));
-            restaurant.put(HeaderCsv.SCORE.getField(), map.get(prefixGrades + HeaderCsv.SCORE.getField()));
+            restaurant.put(Header.$date.name(), map.get(prefixGrades + Header.$date.field));
+            restaurant.put(Header.grade.name(), map.get(prefixGrades + Header.grade.field));
+            restaurant.put(Header.score.name(), map.get(prefixGrades + Header.score.field));
 
-            restaurant.put(HeaderCsv.NAME.getField(), map.get(HeaderCsv.NAME.getField()));
-            restaurant.put(HeaderCsv.RESTAURANT_ID.getField(), map.get(HeaderCsv.RESTAURANT_ID.getField()));
+            restaurant.put(Header.name.name(), map.get(Header.name.field));
+            restaurant.put(Header.restaurantId.name(), map.get(Header.restaurantId.field));
 
             flatGrades.add(restaurant);
         }

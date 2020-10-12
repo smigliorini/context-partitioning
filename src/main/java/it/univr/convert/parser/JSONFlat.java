@@ -21,26 +21,15 @@ public class JSONFlat {
     public static final String CHARSET_DEFAULT = "UTF-8";
 
     /**
-     * Parse the JSON file Row-like mapping using the default character encoding UTF-8
-     *
-     * @param file  The file JSON to parse
-     * @return a List of key-value pairs generated from the JSON file
-     */
-    public static List<Map<String, String>> parseJson(File file) {
-        return parseJsonRows(file, CHARSET_DEFAULT);
-    }
-
-    /**
-     * Parse the JSON file Row-like mapping using the default character encoding UTF-8
+     * Parse the JSON file using the default character encoding UTF-8
      *
      * @param file      The file JSON to parse
-     * @param mapping   The type of JSON file mapping [true = Array] [false = Rows]
+     * @param mapping   True row-like mapping, array-like mapping otherwise
      * @return a List of key-value pairs generated from the JSON file
      */
     public static List<Map<String, String>> parseJson(File file, boolean mapping) {
-        if (!mapping) {
-            return parseJsonRows(file, CHARSET_DEFAULT);
-        } else return parseJsonFile(file, CHARSET_DEFAULT);
+        if (!mapping) return parseJsonRows(file, CHARSET_DEFAULT);
+        else return parseJsonFile(file, CHARSET_DEFAULT);
     }
 
     /**
@@ -48,13 +37,12 @@ public class JSONFlat {
      *
      * @param file      The file JSON to parse
      * @param encoding  The character encoding
-     * @param mapping   The type of JSON file mapping [true = Array] [false = Rows]
+     * @param mapping   True row-like mapping, array-like mapping otherwise
      * @return a List of key-value pairs generated from the JSON file
      */
     public static List<Map<String, String>> parseJson(File file, boolean mapping, String encoding) {
-        if (!mapping) {
-            return parseJsonRows(file, encoding);
-        } else return parseJsonFile(file, encoding);
+        if (!mapping) return parseJsonRows(file, encoding);
+        else return parseJsonFile(file, encoding);
     }
 
     /**
