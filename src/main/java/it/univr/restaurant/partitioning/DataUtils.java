@@ -3,13 +3,13 @@ package it.univr.restaurant.partitioning;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import it.univr.restaurant.partitioning.Boundaries;
 import it.univr.restaurant.RestaurantRecord;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Long.parseLong;
@@ -27,6 +27,304 @@ public class DataUtils {
   }
 
   // === Methods ===============================================================
+
+  /**
+   * MISSING_COMMENT
+   *
+   * @param lines
+   * @param outDir
+   * @param outFileName
+   * @param separator
+   */
+
+  public static void buildFractalInput
+  ( List<String> lines,
+    String outDir,
+    String outFileName,
+    String separator )
+          throws FileNotFoundException {
+
+    if( lines == null ) {
+      throw new NullPointerException();
+    }
+    if( outDir == null ) {
+      throw new NullPointerException();
+    }
+    if( outFileName == null ) {
+      throw new NullPointerException();
+    }
+
+    final String filepath = outDir + outFileName;
+    final PrintWriter outWriter = new PrintWriter( filepath );
+
+    for( String l : lines ) {
+      String coordX = null, coordY = null, $date = null, score = null;
+      int i = 0;
+      //final StringTokenizer tk = new StringTokenizer( l, separator );
+      //while( tk.hasMoreTokens() ) {
+        //final String token = tk.nextToken();
+      String[] tokens = l.split( separator );
+      for ( String token : tokens ) {
+
+        if( i == 0 ) { // building
+          i++;
+
+        } else if( i == 1 ) { // coordX
+          coordX = token;
+          i++;
+
+        } else if( i == 2 ) { // coordY
+          coordY = token;
+          i++;
+
+        } else if( i == 3 ) { // street
+          i++;
+
+        } else if( i == 4 ) { // zipcode
+          i++;
+
+        } else if( i == 5 ) { // borough
+          i++;
+
+        } else if( i == 6 ) { // cuisine
+          i++;
+
+        } else if( i == 7 ) { // time
+          $date = token;
+          i++;
+
+        } else if( i == 8 ) { // grade
+          i++;
+
+        } else if( i == 9 ) { // score
+          score = token;
+          i++;
+
+        } else if( i == 10 ) { // name
+          i++;
+
+        } else if( i == 11 ) { // restaurantId
+          i++;
+        }
+      }
+      outWriter.write( String.format( "%s%s%s%s%s%s%s%s" +
+                      "%s%s%s%s%s%s%s%n",
+              coordX, separator,
+              coordY, separator,
+              $date, separator,
+              score, separator,
+              coordX, separator,
+              coordY, separator,
+              $date, separator,
+              score, separator ) );
+    }
+
+    outWriter.close();
+  }
+
+  /**
+   * MISSING_COMMENT
+   *
+   * @param lines
+   * @param outDir
+   * @param outFileName
+   */
+
+  public static void transformLines
+  ( List<String> lines,
+    String outDir,
+    String outFileName,
+    String separator )
+          throws FileNotFoundException {
+
+    if( lines == null ) {
+      throw new NullPointerException();
+    }
+    if( outDir == null ) {
+      throw new NullPointerException();
+    }
+    if( outFileName == null ) {
+      throw new NullPointerException();
+    }
+
+    final String filepath = outDir + outFileName;
+    final PrintWriter outWriter = new PrintWriter( filepath );
+
+    final WKTReader reader = new WKTReader();
+    final SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm" );
+
+    for( String l : lines ) {
+      final StringBuilder b = new StringBuilder();
+      String building = null, street = null, zipcode = null, borough = null, cuisine = null,
+              grade = null, name = null, restaurantId = null;
+      int i = 0;
+      //final StringTokenizer tk = new StringTokenizer( l, separator );
+      //while( tk.hasMoreTokens() ) {
+        //final String token = tk.nextToken();
+      final String[] tokens = l.split( separator );
+      for ( String token : tokens ) {
+
+        if ( i == 0 ) { // building
+          b.append( token );
+          b.append( separator );
+          i++;
+
+        } else if ( i == 1 ) { // coordX && coordY
+          try {
+            final Point p = (Point) reader.read( token );
+            b.append( p.getX() );
+            b.append( separator );
+            b.append( p.getY() );
+            b.append( separator );
+
+          } catch ( ParseException e ) {
+            // append two empty coordinates
+            b.append( separator );
+            b.append( separator );
+          }
+          i++;
+
+        } else if ( i == 2 ) {
+          try {
+            final Date d = df.parse( token );
+            b.append( d.getTime() );
+            b.append( separator );
+
+          } catch ( java.text.ParseException e ) {
+            // append an empty timestamp
+            b.append( separator );
+          }
+          i++;
+
+        } else if ( i == 3 ) {
+          b.append( token );
+          b.append( separator );
+          i++;
+        }
+      }
+
+      b.append( String.format( "\n" ) );
+      outWriter.write( b.toString() );
+    }
+    outWriter.close();
+  }
+
+  /**
+   * MISSING_COMMENT
+   *
+   * @param lines
+   * @param separator
+   * @return
+   */
+
+  public static Boundaries computeBoundaries ( List<String> lines, String separator ) {
+
+    if( lines == null ) {
+      throw new NullPointerException();
+    }
+
+    final Boundaries b = new Boundaries();
+
+    for( String l : lines ) {
+      int i = 0;
+      final StringTokenizer tk = new StringTokenizer( l, separator );
+      while( tk.hasMoreTokens() ) {
+        final String token = tk.nextToken();
+        //final String[] tokens = l.split( separator );
+        // for ( String token : tokens ) {
+        // todo remove
+        //System.out.println("computeBoundaries " + i + " " + token);
+
+        if ( i == 0 ) { // coordX
+          final double coordX = parseDouble( token );
+          b.updateMinX( coordX );
+          b.updateMaxX( coordX );
+          i++;
+
+        } else if ( i == 1 ) { // coordY
+          final double coordY = parseDouble( token );
+          b.updateMinY( coordY );
+          b.updateMaxY( coordY );
+          i++;
+
+        } else if ( i == 2 ) { // $date
+          final long $date = parseLong( token );
+          b.updateMinT( $date );
+          b.updateMaxT( $date );
+          i++;
+
+        } else if ( i == 3 ) { // score
+          final int score = Integer.parseInt( token );
+          b.updateMinScore( score );
+          b.updateMaxScore( score );
+          i++;
+
+        }//*/
+        /*
+        if ( i == 0 ) {
+          // building
+          i++;
+
+        } else if ( i == 1 ) {
+          // coordX
+          final double coordX = parseDouble( token );
+          b.updateMinX( coordX );
+          b.updateMaxX( coordX );
+          i++;
+
+        } else if ( i == 2 ) {
+          // coordY
+          final double coordY = parseDouble( token );
+          b.updateMinY( coordY );
+          b.updateMaxY( coordY );
+          i++;
+
+        } else if ( i == 3 ) {
+          // street
+          i++;
+
+        } else if ( i == 4 ) {
+          // zipcode
+          i++;
+
+        } else if ( i == 5 ) {
+          // borough
+          i++;
+
+        } else if ( i == 6 ) {
+          // cuisine
+          i++;
+
+        } else if ( i == 7 ) {
+          // $date
+          final long $date = parseLong( token );
+          b.updateMinT( $date );
+          b.updateMaxT( $date );
+          i++;
+
+        } else if ( i == 8 ) {
+          // grade
+          i++;
+
+        } else if ( i == 9 ) {
+          // score
+          final int score = Integer.parseInt( token );
+          b.updateMinScore( score );
+          b.updateMaxScore( score );
+          i++;
+
+        } else if ( i == 10 ) {
+          // name
+          i++;
+
+        } else if ( i == 11 ) {
+          // restaurantId
+          i++;
+        }//*/
+      }
+    }
+    return b;
+  }
 
   /**
    * MISSING_COMMENT
@@ -69,54 +367,146 @@ public class DataUtils {
 
     final RestaurantRecord r = new RestaurantRecord();
 
-    final StringTokenizer tk = new StringTokenizer( line, separator );
     int i = 0;
+    //final StringTokenizer tk = new StringTokenizer( line, separator );
+    //while( tk.hasMoreTokens() ) {
+      //final String token = tk.nextToken();
+    final String[] tokens = line.split( separator );
+    for( String token : tokens ) {
 
-    // new version of the input file!
-    while( tk.hasMoreTokens() ) {
-      final String token = tk.nextToken();
-      switch (i) {
+      switch ( i ) {
         case 0: // coordX
           try {
-            r.setCoordX(parseDouble(token));
-          } catch (NumberFormatException e) {
-            r.setCoordX(null);
+            r.setCoordX( parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.setCoordX( null );
           }
           i++;
           break;
         case 1: // coordY
           try {
-            r.setCoordY(parseDouble(token));
-          } catch (NumberFormatException e) {
-            r.setCoordY(null);
+            r.setCoordY( parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.setCoordY( null );
           }
           i++;
           break;
         case 2: // $date
           try {
-            r.set$date(Long.parseLong(token));
-          } catch (NumberFormatException e) {
-            r.set$date(null);
+            r.set$date( Double.parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.set$date( null );
           }
           i++;
           break;
-        case 3: // grade
+        case 3: // score
           try {
-            r.setGrade(token);
-          } catch (NumberFormatException e) {
-            r.setGrade(null);
+            r.setScore( Double.parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.setScore( null );
           }
           i++;
           break;
-        case 4: // score
+      }//*/
+      /*
+      switch ( i ) {
+        case 0: // building
+          if ( token.isEmpty() ) {
+            r.setBuilding( null );
+          } else {
+            r.setBuilding( token );
+          }
+          i++;
+          break;
+        case 1: // coordX
           try {
-            r.setScore(Integer.parseInt(token));
-          } catch (NumberFormatException e) {
-            r.setScore(null);
+            r.setCoordX( parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.setCoordX( null );
           }
           i++;
           break;
-      }
+        case 2: // coordY
+          try {
+            r.setCoordY( parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.setCoordY( null );
+          }
+          i++;
+          break;
+        case 3: // street
+          if ( token.isEmpty() ) {
+            r.setStreet( null );
+          } else {
+            r.setStreet( token );
+          }
+          i++;
+          break;
+        case 4: // zipcode
+          if ( token.isEmpty() ) {
+            r.setZipcode( null );
+          } else {
+            r.setZipcode( token );
+          }
+          i++;
+          break;
+        case 5: // borough
+          if ( token.isEmpty() ) {
+            r.setBorough( null );
+          } else {
+            r.setBorough( token );
+          }
+          i++;
+          break;
+        case 6: // cuisine
+          if ( token.isEmpty() ) {
+            r.setCuisine( null );
+          } else {
+            r.setCuisine( token );
+          }
+          i++;
+          break;
+        case 7: // $date
+          try {
+            r.set$date( Double.parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.set$date( null );
+          }
+          i++;
+          break;
+        case 8: // grade
+          if ( token.isEmpty() ) {
+            r.setGrade( null );
+          } else {
+            r.setGrade( token );
+          }
+          i++;
+          break;
+        case 9: // score
+          try {
+            r.setScore( Double.parseDouble( token ) );
+          } catch ( NumberFormatException e ) {
+            r.setScore( null );
+          }
+          i++;
+          break;
+        case 10: // name
+          if ( token.isEmpty() ) {
+            r.setName( null );
+          } else {
+            r.setName( token );
+          }
+          i++;
+          break;
+        case 11: // restaurantId
+          if ( token.isEmpty() ) {
+            r.setRestaurantId( null );
+          } else {
+            r.setRestaurantId( token );
+          }
+          i++;
+          break;
+      }//*/
     }
     return r;
   }
