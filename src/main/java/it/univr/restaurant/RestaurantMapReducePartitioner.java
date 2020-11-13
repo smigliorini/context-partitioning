@@ -1,15 +1,13 @@
 package it.univr.restaurant;
 
 import it.univr.convert.RestaurantJsonToCsv;
-import it.univr.hadoop.ContextBasedPartitioner;
+import it.univr.restaurant.hadoop.ContextBasedPartitioner;
 
 public class RestaurantMapReducePartitioner {
 
     public static void main (String... args ) throws Exception {
         // todo: remove!
         //System.setProperty( "hadoop.home.dir", "/usr/local/hadoop/" );
-
-        //RestaurantJsonToCsv.runJsonToCsv();
 
         long t1 = System.currentTimeMillis();
         final ContextBasedPartitioner partitioner =

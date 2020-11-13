@@ -11,60 +11,60 @@ public class  RestaurantRecord {
   protected Double coordY;
   protected String street;
   protected String zipcode;
-
   protected String borough;
   protected String cuisine;
-
-  protected Long $date;
+  //protected Long $date;
+  protected Double $date;
   protected String grade;
-  protected Integer score;
-
+  //protected Integer score;
+  protected Double score;
   protected String name;
   protected String restaurantId;
 
   public RestaurantRecord() {
-    //building = null;
+    building = null;
     coordX = null;
     coordY = null;
-    //street = null;
-    //zipcode = null;
-    //borough = null;
-    //cuisine = null;
+    street = null;
+    zipcode = null;
+    borough = null;
+    cuisine = null;
     $date = null;
     grade = null;
     score = null;
-    //name = null;
-    //restaurantId = null;
+    name = null;
+    restaurantId = null;
   }
 
-  public RestaurantRecord(Double coordX, Double coordY, Long $date, String grade, Integer score) {
-    //this.building = building;
+  public RestaurantRecord(String building, Double coordX, Double coordY, String street, String zipcode, String borough,
+                          String cuisine, Double $date, String grade, Double score, String name, String restaurantId) {
+    this.building = building;
     this.coordX = coordX;
     this.coordY = coordY;
-    //this.street = street;
-    //this.zipcode = zipcode;
-    //this.borough = borough;
-    //this.cuisine = cuisine;
+    this.street = street;
+    this.zipcode = zipcode;
+    this.borough = borough;
+    this.cuisine = cuisine;
     this.$date = $date;
     this.grade = grade;
     this.score = score;
-    //this.name = name;
-    //this.restaurant_id = restaurant_id;
+    this.name = name;
+    this.restaurantId = restaurantId;
   }
 
   public RestaurantRecord(RestaurantRecord restaurantRecord) {
-    this(//restaurantRecord.getBuilding(),
+    this(restaurantRecord.getBuilding(),
             restaurantRecord.getCoordX(),
             restaurantRecord.getCoordY(),
-            //restaurantRecord.getStreet(),
-            //restaurantRecord.getZipcode(),
-            //restaurantRecord.getBorough(),
-            //restaurantRecord.getCuisine(),
+            restaurantRecord.getStreet(),
+            restaurantRecord.getZipcode(),
+            restaurantRecord.getBorough(),
+            restaurantRecord.getCuisine(),
             restaurantRecord.get$date(),
             restaurantRecord.getGrade(),
-            restaurantRecord.getScore()
-            //restaurantRecord.getName(),
-            //restaurantRecord.getRestaurantId()
+            restaurantRecord.getScore(),
+            restaurantRecord.getName(),
+            restaurantRecord.getRestaurantId()
     );
   }
 
@@ -77,7 +77,7 @@ public class  RestaurantRecord {
   public void setCoordX(Double coordX) { this.coordX = coordX; }
 
   public Double getCoordY() { return coordY; }
-  public void setCoordY(Double coordY) { this.coordX = coordY; }
+  public void setCoordY(Double coordY) { this.coordY = coordY; }
 
   public String getStreet() {
     return street;
@@ -107,10 +107,10 @@ public class  RestaurantRecord {
     this.cuisine = cuisine;
   }
 
-  public Long get$date() {
+  public Double get$date() {
     return $date;
   }
-  public void set$date(Long $date) {
+  public void set$date(Double $date) {
     this.$date = $date;
   }
 
@@ -121,22 +121,14 @@ public class  RestaurantRecord {
     this.grade = grade;
   }
 
-  public int getScore() { return score; }
-  public void setScore(Integer score) {
-    this.score = score;
-  }
+  public Double getScore() { return score; }
+  public void setScore(Double score) { this.score = score; }
 
-  public String getName() {
-    return name;
-  }
-  public void setName(String name) {
-    this.name = name;
-  }
+  public String getName() { return name; }
+  public void setName(String name) { this.name = name; }
 
   public String getRestaurantId() { return restaurantId; }
-  public void setRestaurantId(String restaurantId) {
-    this.restaurantId = restaurantId;
-  }
+  public void setRestaurantId(String restaurantId) { this.restaurantId = restaurantId; }
 
   public String toString( String separator ){
     final StringBuilder sb = new StringBuilder();
@@ -156,13 +148,40 @@ public class  RestaurantRecord {
     //sb.append( separator );
     sb.append( $date );
     sb.append( separator );
-    sb.append( grade );
-    sb.append( separator );
+    //sb.append( grade );
+    //sb.append( separator );
     sb.append( score );
     //sb.append( separator );
     //sb.append( name );
     //sb.append( separator );
     //sb.append( restaurantId );
+
+    // fix for producing the same format of the input
+    sb.append( separator ); // ?
+    //sb.append( building );
+    //sb.append( separator );
+    sb.append( coordX );
+    sb.append( separator );
+    sb.append( coordY );
+    sb.append( separator );
+    //sb.append( street );
+    //sb.append( separator );
+    //sb.append( zipcode );
+    //sb.append( separator );
+    //sb.append( borough );
+    //sb.append( separator );
+    //sb.append( cuisine );
+    //sb.append( separator );
+    sb.append( $date );
+    sb.append( separator );
+    //sb.append( grade );
+    //sb.append( separator );
+    sb.append( score );
+    //sb.append( separator );
+    //sb.append( name );
+    //sb.append( separator );
+    //sb.append( restaurantId );
+
     return sb.toString();
   }
 
@@ -175,14 +194,14 @@ public class  RestaurantRecord {
             Objects.equals(coordY, that.coordY) &&
             Objects.equals($date, that.$date) &&
             Objects.equals(grade, that.grade) &&
-            Objects.equals(score, that.score);
+            Objects.equals(score, that.score) &&
+            Objects.equals(restaurantId, that.restaurantId);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(coordX, coordY, $date, grade, score);
   }
-
 
   @Override
   public String toString() {
