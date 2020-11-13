@@ -1,4 +1,4 @@
-package it.univr.hadoop.mapreduce.multilevel;
+package it.univr.restaurant.hadoop.mapreduce.multilevel;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
@@ -11,7 +11,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,7 +54,8 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
     @Override
     protected void foreachOperation(Text key, VIN data, Configuration configuration) {
         //calculate max and min for the next property, this operation save a new map reduce task (MBB)
-        if(nextProperty.toString().isEmpty()) { // nextProperty.isEmpty()
+        //if( nextProperty.toString().isEmpty() ) { // nextProperty.isEmpty()
+        if( !nextProperty.isPresent() ) {
             List<String> strings = Arrays.asList(data.getContextFields());
             int i = strings.indexOf(propertyName);
             nextProperty = Optional.of(strings.get(i + 1));
@@ -71,6 +71,9 @@ public class MultiLevelMiddleReducer<VIN extends ContextData, VOUT extends Conte
             Double max = Math.max(doubleDoublePair.getRight(), value);
             minMax.put(hashKey, Pair.of(min, max));
         }
+        // todo remove
+        //System.out.println("key: " + key.toString() + " propertyName: " + propertyName + " nextProperty: " + nextProperty.get());
+        //System.out.println("value: " + value);
     }
 
     @Override
