@@ -60,50 +60,48 @@ public class DataUtils {
     for( String l : lines ) {
       String coordX = null, coordY = null, $date = null, score = null;
       int i = 0;
-      //final StringTokenizer tk = new StringTokenizer( l, separator );
-      //while( tk.hasMoreTokens() ) {
-        //final String token = tk.nextToken();
-      String[] tokens = l.split( separator );
+      final String[] tokens = l.split( separator );
       for ( String token : tokens ) {
 
-        if( i == 0 ) { // building
+        if( i == 0 ) {
+          // building
           i++;
-
-        } else if( i == 1 ) { // coordX
+        } else if( i == 1 ) {
+          // coordX
           coordX = token;
           i++;
-
-        } else if( i == 2 ) { // coordY
+        } else if( i == 2 ) {
+          // coordY
           coordY = token;
           i++;
-
-        } else if( i == 3 ) { // street
+        } else if( i == 3 ) {
+          // street
           i++;
-
-        } else if( i == 4 ) { // zipcode
+        } else if( i == 4 ) {
+          // zipcode
           i++;
-
-        } else if( i == 5 ) { // borough
+        } else if( i == 5 ) {
+          // borough
           i++;
-
-        } else if( i == 6 ) { // cuisine
+        } else if( i == 6 ) {
+          // cuisine
           i++;
-
-        } else if( i == 7 ) { // time
+        } else if( i == 7 ) {
+          // time
           $date = token;
           i++;
-
-        } else if( i == 8 ) { // grade
+        } else if( i == 8 ) {
+          // grade
           i++;
-
-        } else if( i == 9 ) { // score
+        } else if( i == 9 ) {
+          // score
           score = token;
           i++;
-
-        } else if( i == 10 ) { // name
+        } else if( i == 10 ) {
+          // name
           i++;
-
-        } else if( i == 11 ) { // restaurantId
+        } else if( i == 11 ) {
+          // restaurantId
           i++;
         }
       }
@@ -129,7 +127,7 @@ public class DataUtils {
    * @param outDir
    * @param outFileName
    */
-
+  // TODO: check
   public static void transformLines
   ( List<String> lines,
     String outDir,
@@ -146,7 +144,7 @@ public class DataUtils {
     if( outFileName == null ) {
       throw new NullPointerException();
     }
-
+    /*
     final String filepath = outDir + outFileName;
     final PrintWriter outWriter = new PrintWriter( filepath );
 
@@ -158,9 +156,6 @@ public class DataUtils {
       String building = null, street = null, zipcode = null, borough = null, cuisine = null,
               grade = null, name = null, restaurantId = null;
       int i = 0;
-      //final StringTokenizer tk = new StringTokenizer( l, separator );
-      //while( tk.hasMoreTokens() ) {
-        //final String token = tk.nextToken();
       final String[] tokens = l.split( separator );
       for ( String token : tokens ) {
 
@@ -207,6 +202,7 @@ public class DataUtils {
       outWriter.write( b.toString() );
     }
     outWriter.close();
+     */
   }
 
   /**
@@ -227,99 +223,79 @@ public class DataUtils {
 
     for( String l : lines ) {
       int i = 0;
-      final StringTokenizer tk = new StringTokenizer( l, separator );
-      while( tk.hasMoreTokens() ) {
-        final String token = tk.nextToken();
-        //final String[] tokens = l.split( separator );
-        // for ( String token : tokens ) {
-        // todo remove
-        //System.out.println("computeBoundaries " + i + " " + token);
-
+      final String[] tokens = l.split( separator );
+      for ( String token : tokens ) {
+        /*
         if ( i == 0 ) { // coordX
           final double coordX = parseDouble( token );
           b.updateMinX( coordX );
           b.updateMaxX( coordX );
           i++;
-
         } else if ( i == 1 ) { // coordY
           final double coordY = parseDouble( token );
           b.updateMinY( coordY );
           b.updateMaxY( coordY );
           i++;
-
         } else if ( i == 2 ) { // $date
           final long $date = parseLong( token );
           b.updateMinT( $date );
           b.updateMaxT( $date );
           i++;
-
         } else if ( i == 3 ) { // score
           final int score = Integer.parseInt( token );
           b.updateMinScore( score );
           b.updateMaxScore( score );
           i++;
-
         }//*/
-        /*
-        if ( i == 0 ) {
-          // building
+
+        if ( i == 0 ) { // building
           i++;
 
-        } else if ( i == 1 ) {
-          // coordX
+        } else if ( i == 1 ) { // coordX
           final double coordX = parseDouble( token );
           b.updateMinX( coordX );
           b.updateMaxX( coordX );
           i++;
 
-        } else if ( i == 2 ) {
-          // coordY
+        } else if ( i == 2 ) { // coordY
           final double coordY = parseDouble( token );
           b.updateMinY( coordY );
           b.updateMaxY( coordY );
           i++;
 
-        } else if ( i == 3 ) {
-          // street
+        } else if ( i == 3 ) { // street
           i++;
 
-        } else if ( i == 4 ) {
-          // zipcode
+        } else if ( i == 4 ) { // zipcode
           i++;
 
-        } else if ( i == 5 ) {
-          // borough
+        } else if ( i == 5 ) { // borough
           i++;
 
-        } else if ( i == 6 ) {
-          // cuisine
+        } else if ( i == 6 ) { // cuisine
           i++;
 
-        } else if ( i == 7 ) {
-          // $date
+        } else if ( i == 7 ) { // $date
           final long $date = parseLong( token );
           b.updateMinT( $date );
           b.updateMaxT( $date );
           i++;
 
-        } else if ( i == 8 ) {
-          // grade
+        } else if ( i == 8 ) { // grade
           i++;
 
-        } else if ( i == 9 ) {
-          // score
+        } else if ( i == 9 ) { // score
           final int score = Integer.parseInt( token );
           b.updateMinScore( score );
           b.updateMaxScore( score );
           i++;
 
-        } else if ( i == 10 ) {
-          // name
+        } else if ( i == 10 ) { // name
           i++;
 
-        } else if ( i == 11 ) {
-          // restaurantId
+        } else if ( i == 11 ) { // restaurantId
           i++;
+
         }//*/
       }
     }
@@ -368,12 +344,9 @@ public class DataUtils {
     final RestaurantRecord r = new RestaurantRecord();
 
     int i = 0;
-    //final StringTokenizer tk = new StringTokenizer( line, separator );
-    //while( tk.hasMoreTokens() ) {
-      //final String token = tk.nextToken();
     final String[] tokens = line.split( separator );
     for( String token : tokens ) {
-
+      /*
       switch ( i ) {
         case 0: // coordX
           try {
@@ -408,13 +381,13 @@ public class DataUtils {
           i++;
           break;
       }//*/
-      /*
+
       switch ( i ) {
         case 0: // building
-          if ( token.isEmpty() ) {
-            r.setBuilding( null );
-          } else {
+          if( !token.isEmpty() ) {
             r.setBuilding( token );
+          } else {
+            r.setBuilding( null );
           }
           i++;
           break;
@@ -435,39 +408,41 @@ public class DataUtils {
           i++;
           break;
         case 3: // street
-          if ( token.isEmpty() ) {
-            r.setStreet( null );
-          } else {
+          if( !token.isEmpty() ) {
             r.setStreet( token );
+          } else {
+            r.setStreet( null );
           }
           i++;
           break;
         case 4: // zipcode
-          if ( token.isEmpty() ) {
+          try {
+            //r.setZipcode( Double.parseDouble( token ) );
+            r.setZipcode( Integer.parseInt( token ) );
+          } catch ( NumberFormatException e ) {
             r.setZipcode( null );
-          } else {
-            r.setZipcode( token );
           }
           i++;
           break;
         case 5: // borough
-          if ( token.isEmpty() ) {
-            r.setBorough( null );
-          } else {
+          if( !token.isEmpty() ) {
             r.setBorough( token );
+          } else {
+            r.setBorough( null );
           }
           i++;
           break;
         case 6: // cuisine
-          if ( token.isEmpty() ) {
-            r.setCuisine( null );
-          } else {
+          if( !token.isEmpty() ) {
             r.setCuisine( token );
+          } else {
+            r.setCuisine( null );
           }
           i++;
           break;
         case 7: // $date
           try {
+            //r.set$date( Long.parseLong( token ) );
             r.set$date( Double.parseDouble( token ) );
           } catch ( NumberFormatException e ) {
             r.set$date( null );
@@ -475,15 +450,16 @@ public class DataUtils {
           i++;
           break;
         case 8: // grade
-          if ( token.isEmpty() ) {
-            r.setGrade( null );
-          } else {
+          if( !token.isEmpty() ) {
             r.setGrade( token );
+          } else {
+            r.setGrade( null );
           }
           i++;
           break;
         case 9: // score
           try {
+            //r.setScore( Integer.parseInt( token ) );
             r.setScore( Double.parseDouble( token ) );
           } catch ( NumberFormatException e ) {
             r.setScore( null );
@@ -491,18 +467,19 @@ public class DataUtils {
           i++;
           break;
         case 10: // name
-          if ( token.isEmpty() ) {
-            r.setName( null );
-          } else {
+          if( !token.isEmpty() ) {
             r.setName( token );
+          } else {
+            r.setName( null );
           }
           i++;
           break;
         case 11: // restaurantId
-          if ( token.isEmpty() ) {
+          try {
+            //r.setRestaurantId( Double.parseDouble( token ) );
+            r.setRestaurantId( Integer.parseInt( token ) );
+          } catch ( NumberFormatException e ) {
             r.setRestaurantId( null );
-          } else {
-            r.setRestaurantId( token );
           }
           i++;
           break;

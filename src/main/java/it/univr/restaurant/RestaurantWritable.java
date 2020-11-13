@@ -16,13 +16,42 @@ public class RestaurantWritable
   extends RestaurantRecord
   implements ContextData {
 
-  static final Logger LOGGER = LogManager.getLogger(RestaurantWritable.class);
-  public static String SPLITERATOR = ",";
-  private static final String[] fileFields = {
-          "building", "coordX", "coordY", "street", "zipcode",
-          "borough", "cuisine", "$date", "grade", "score", "name", "restaurantId"
+  /**
+   * List of fields to be printed in the output file
+   */
+  /*private static final int[] numItems = { 0,1,2,3,4,5,6,8,9,10,11 }; // all items - $date //*/
+  private static final int[] numItems = { 1,2,9,0 }; // coordX, coordY, $date, building //*/
+  /*private static final int[] numItems = { 1,2,7,9 }; // coordX, coordY, $date, score //*/
+  /*private static final int[] numItems = { 1,2,8,11 }; // coordX, coordY, score, grade, restaurantId //*/
+  /*private static final int[] numItems = { 1,2,9,8 }; // coordX, coordY, score, grade //*/
+
+  /**
+   * Fields of the input file
+   */
+  private static final String[] attributes = {
+          //"coordX", "coordY", "$date", "score"
+          "building",
+          "coordX",
+          "coordY",
+          "street",
+          "zipcode",
+          "borough",
+          "cuisine",
+          "$date",
+          "grade",
+          "score",
+          "name",
+          "restaurantId"
   };
-  private static final String[] partLevels = { "coordX", "coordY", "$date", "score" };
+
+  /**
+   * Possible fields to partition
+   */
+  private static final String[] partItems = { "coordX", "coordY", "$date", "score" };
+
+  static final Logger LOGGER = LogManager.getLogger( RestaurantWritable.class );
+
+  public static String SPLITERATOR = ",";
 
   public RestaurantWritable() {
     super();
@@ -36,77 +65,62 @@ public class RestaurantWritable
     super( restaurantWritable );
   }
 
-  private static final int[] args = {1,2,7,9}; // coordX, coordY, $date, score//*/
-  /*private static final int[] args = {7,1,2,9}; // $date, coordX, coordY, score//*/
-
   @Override
   public String[] getContextFields() {
     //return new String[]{"coordX", "coordY", "$date", "score"};
-    return getContextFields( args );
+    return getContextFields( numItems );
   }
 
   public String[] getContextFields( int[] ordinal ) {
-    final List<String> fields = Arrays.asList(getFields( ordinal ));
-    final Set<String> contextFields = new LinkedHashSet<>();
+    final List<String> writeFields = Arrays.asList( getWriteFields( ordinal ) );
+    final Set<String> partFields = new HashSet<>();
 
-    for( String level : partLevels ) {
-      if( fields.contains( level ) ) {
-        contextFields.add( level );
+    for( String pf : partItems ) {
+      if( writeFields.contains(pf) ) {
+        partFields.add(pf);
       }
     }
 
-    if( contextFields.size() == 0 ) {
-      LOGGER.error( format( "Context fields is empty index, choose: %s", Arrays.toString(partLevels) ) );
+    if( partFields.size() == 0 ) {
+      LOGGER.error( format( "Context fields array is empty, choose at least two: %s", Arrays.toString(partItems) ) );
+      System.exit(-1);
     }
 
-    return contextFields.toArray( new String[contextFields.size()] );
+    return partFields.toArray( new String[partFields.size()] );
   }
 
-  public String[] getFields() {
-
-    return getFields( args );
+  public String[] getWriteFields() {
+    return getWriteFields( numItems );
   }
 
-  public String[] getFields( int[] ordinal ) {
-    final Set<String> fieldSet = new LinkedHashSet<>();
-    final int start = 0, end = fileFields.length;
+  public String[] getWriteFields( int[] items ) {
+    List<String> fields = new ArrayList<>();
 
-    for( int o : ordinal ) {
-      if( o < start || o > end ) {
-        LOGGER.warn( format( "Field index %d not exist.", o ) );
-      }
-      fieldSet.add( fileFields[o] );
+    for( int fieldNumber : items ) {
+      if( fieldNumber >= 0 && fieldNumber < attributes.length  )
+        fields.add( attributes[fieldNumber] );
+      else
+        LOGGER.warn( format( "Field index %d is not exist.", fieldNumber ) );
     }
-    return fieldSet.toArray( new String[fieldSet.size()] );
+
+    return fields.toArray( new String[fields.size()] );
   }
 
   @Override
   public int compareTo( ContextData o ) {
     RestaurantRecord restaurantRecord = ( RestaurantRecord ) o;
+    if ( this.$date < restaurantRecord.$date )
+      return -1;
+    if ( this.$date > restaurantRecord.$date )
+      return 1;
     if ( this.coordX < restaurantRecord.coordX )
       return 1;
     if ( this.coordX > restaurantRecord.coordX )
       return -1;
     if ( this.coordY < restaurantRecord.coordY )
-      return 1;
+     return 1;
     if ( this.coordY > restaurantRecord.coordY )
-      return -1;
-    if ( this.$date < restaurantRecord.$date )
-      return -1;
-    if ( this.$date > restaurantRecord.$date )
-      return 1;
-    if ( this.grade.compareTo(restaurantRecord.grade) < 0 )
-      return 1;
-    if ( this.grade.compareTo(restaurantRecord.grade) > 0 )
-      return -1;
-    if ( this.score < restaurantRecord.score )
-      return 1;
-    if ( this.score > restaurantRecord.score )
-      return -1;
-    if ( this.restaurantId.compareTo(restaurantRecord.restaurantId) < 0 )
-      return 1;
-    if ( this.restaurantId.compareTo(restaurantRecord.restaurantId) > 0 )
-      return -1;
+     return -1;
     return 0;
   }
 
@@ -118,8 +132,7 @@ public class RestaurantWritable
     out.writeDouble( $date );
     out.writeDouble( score );//*/
 
-    for( String fieldName : getFields() ) {
-
+    for( String fieldName : getWriteFields() ) {
       switch( fieldName ) {
         case "building":
           // building can be empty string
@@ -128,42 +141,39 @@ public class RestaurantWritable
           } catch( NullPointerException e ) {
             out.writeUTF( "null" );
           }
+          break;
         case "coordX":
           out.writeDouble( coordX );
           break;
         case "coordY":
           out.writeDouble( coordY );
           break;
-        case "street:":
-          out.writeUTF( street );
+        case "street":
+          out.writeUTF( street.toString() );
           break;
         case "zipcode":
-          out.writeUTF( zipcode );
+          out.writeInt( zipcode );
           break;
         case "borough":
-          out.writeUTF( borough );
+          out.writeUTF( borough.toString() );
           break;
         case "cuisine":
-          out.writeUTF( cuisine );
+          out.writeUTF( cuisine.toString() );
           break;
         case "$date":
           out.writeDouble( $date );
           break;
         case "grade":
-          out.writeUTF( grade );
+          out.writeUTF( grade.toString() );
+          break;
         case "score":
-          try {
-            out.writeDouble( score );
-          } catch ( NullPointerException e ) {
-            System.out.println("score: " + score);
-            out.writeDouble( score );
-          }
+          out.writeDouble( score );
           break;
         case "name":
-          out.writeUTF( name );
+          out.writeUTF( name.toString() );
           break;
         case "restaurantId":
-          out.writeUTF( restaurantId );
+          out.writeInt( restaurantId );
           break;
       }
     }
@@ -176,11 +186,10 @@ public class RestaurantWritable
     coordY = in.readDouble();
     // $date = in.readLong();
     $date = in.readDouble();
-    //score = in.readInt();
+    // score = in.readInt();
     score = in.readDouble();//*/
 
-    for( String fieldName : getFields() ) {
-
+    for( String fieldName : getWriteFields() ) {
       switch( fieldName ) {
         case "building":
           building = in.readUTF();
@@ -191,11 +200,11 @@ public class RestaurantWritable
         case "coordY":
           coordY = in.readDouble();
           break;
-        case "street:":
+        case "street":
           street = in.readUTF();
           break;
         case "zipcode":
-          zipcode = in.readUTF();
+          zipcode = in.readInt();
           break;
         case "borough":
           borough = in.readUTF();
@@ -216,7 +225,7 @@ public class RestaurantWritable
           name = in.readUTF();
           break;
         case "restaurantId":
-          restaurantId = in.readUTF();
+          restaurantId = in.readInt();
           break;
       }
     }
@@ -245,9 +254,7 @@ public class RestaurantWritable
   public String toString( String separator ) {
     final StringBuilder b = new StringBuilder();
 
-    for( int i=0; i < 2; i++ ) { // fix for producing the same format of the input
-      for( String fieldName : getFields() ) {
-
+      for( String fieldName : getWriteFields() ) {
         switch( fieldName ) {
           case "building":
             b.append( building );
@@ -299,9 +306,7 @@ public class RestaurantWritable
             break;
         }
       }
-    }
-
-    b.deleteCharAt( b.length()-1 );
+    b.deleteCharAt( b.length() - 1 );
     return b.toString();
   }
 }

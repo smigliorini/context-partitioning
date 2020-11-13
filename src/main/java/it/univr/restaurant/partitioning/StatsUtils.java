@@ -153,12 +153,9 @@ public class StatsUtils {
       final List<String> lines = readLines( f, false );
       for( String l : lines ) {
         int i = 0;
-        //String[] tokens = l.split( separator );
-        //for ( String token : tokens ) {
-        final StringTokenizer tk = new StringTokenizer( l, separator );
-        while( tk.hasMoreTokens() ) {
-          final String token = tk.nextToken();
-
+        final String[] tokens = l.split( separator );
+        for ( String token : tokens ) {
+          /*
           switch ( i ) {
             case 0: // coordX
               final Double x = parseDouble( token );
@@ -199,7 +196,7 @@ public class StatsUtils {
               i++;
               break;
           }//*/
-          /*
+
           switch( i ) {
             case 1: // coordX
               final Double x = parseDouble( token );
@@ -370,13 +367,10 @@ public class StatsUtils {
       }
       // todo check
       for( String l : lines ) {
-        final StringTokenizer tk = new StringTokenizer( l, separator );
         int i = 0;
-        //String[] tokens = l.split( separator );
-        //for ( String token : tokens ) {
-        while( tk.hasMoreTokens() ) {
-          final String token = tk.nextToken();
-
+        final String[] tokens = l.split( separator );
+        for ( String token : tokens ) {
+          /*
           switch( i ) {
             case 0: // coordX
               //final double valueX = parseDouble( tk.nextToken() );
@@ -414,7 +408,7 @@ public class StatsUtils {
               i++;
               break;
           }//*/
-          /*
+
           switch( i ) {
             case 1: // coordX
               final double valueX = parseDouble( token );

@@ -10,7 +10,8 @@ public class  RestaurantRecord {
   protected Double coordX;
   protected Double coordY;
   protected String street;
-  protected String zipcode;
+  //protected Double zipcode;
+  protected Integer zipcode;
   protected String borough;
   protected String cuisine;
   //protected Long $date;
@@ -19,7 +20,8 @@ public class  RestaurantRecord {
   //protected Integer score;
   protected Double score;
   protected String name;
-  protected String restaurantId;
+  //protected Double restaurantId;
+  protected Integer restaurantId;
 
   public RestaurantRecord() {
     building = null;
@@ -36,8 +38,8 @@ public class  RestaurantRecord {
     restaurantId = null;
   }
 
-  public RestaurantRecord(String building, Double coordX, Double coordY, String street, String zipcode, String borough,
-                          String cuisine, Double $date, String grade, Double score, String name, String restaurantId) {
+  public RestaurantRecord(String building, Double coordX, Double coordY, String street, Integer zipcode, String borough,
+                          String cuisine, Double $date, String grade, Double score, String name, Integer restaurantId) {
     this.building = building;
     this.coordX = coordX;
     this.coordY = coordY;
@@ -82,14 +84,12 @@ public class  RestaurantRecord {
   public String getStreet() {
     return street;
   }
-  public void setStreet(String street) {
-    this.street = street;
-  }
+  public void setStreet(String street) { this.street = street; }
 
-  public String getZipcode() {
+  public Integer getZipcode() {
     return zipcode;
   }
-  public void setZipcode(String zipcode) {
+  public void setZipcode(Integer zipcode) {
     this.zipcode = zipcode;
   }
 
@@ -127,60 +127,60 @@ public class  RestaurantRecord {
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
 
-  public String getRestaurantId() { return restaurantId; }
-  public void setRestaurantId(String restaurantId) { this.restaurantId = restaurantId; }
+  public Integer getRestaurantId() { return restaurantId; }
+  public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
 
   public String toString( String separator ){
     final StringBuilder sb = new StringBuilder();
-    //sb.append( building );
-    //sb.append( separator );
+    sb.append( building );
+    sb.append( separator );
     sb.append( coordX );
     sb.append( separator );
     sb.append( coordY );
     sb.append( separator );
-    //sb.append( street );
-    //sb.append( separator );
-    //sb.append( zipcode );
-    //sb.append( separator );
-    //sb.append( borough );
-    //sb.append( separator );
-    //sb.append( cuisine );
-    //sb.append( separator );
+    sb.append( street );
+    sb.append( separator );
+    sb.append( zipcode );
+    sb.append( separator );
+    sb.append( borough );
+    sb.append( separator );
+    sb.append( cuisine );
+    sb.append( separator );
     sb.append( $date );
     sb.append( separator );
-    //sb.append( grade );
-    //sb.append( separator );
+    sb.append( grade );
+    sb.append( separator );
     sb.append( score );
-    //sb.append( separator );
-    //sb.append( name );
-    //sb.append( separator );
-    //sb.append( restaurantId );
+    sb.append( separator );
+    sb.append( name );
+    sb.append( separator );
+    sb.append( restaurantId );
 
     // fix for producing the same format of the input
-    sb.append( separator ); // ?
-    //sb.append( building );
-    //sb.append( separator );
+    sb.append( separator );
+    sb.append( building );
+    sb.append( separator );
     sb.append( coordX );
     sb.append( separator );
     sb.append( coordY );
     sb.append( separator );
-    //sb.append( street );
-    //sb.append( separator );
-    //sb.append( zipcode );
-    //sb.append( separator );
-    //sb.append( borough );
-    //sb.append( separator );
-    //sb.append( cuisine );
-    //sb.append( separator );
+    sb.append( street );
+    sb.append( separator );
+    sb.append( zipcode );
+    sb.append( separator );
+    sb.append( borough );
+    sb.append( separator );
+    sb.append( cuisine );
+    sb.append( separator );
     sb.append( $date );
     sb.append( separator );
-    //sb.append( grade );
-    //sb.append( separator );
+    sb.append( grade );
+    sb.append( separator );
     sb.append( score );
-    //sb.append( separator );
-    //sb.append( name );
-    //sb.append( separator );
-    //sb.append( restaurantId );
+    sb.append( separator );
+    sb.append( name );
+    sb.append( separator );
+    sb.append( restaurantId );
 
     return sb.toString();
   }
