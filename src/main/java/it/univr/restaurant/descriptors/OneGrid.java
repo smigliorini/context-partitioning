@@ -606,13 +606,41 @@ public class OneGrid extends Configured {
     public void map( LongWritable key, Text value, Context context )
       throws IOException, InterruptedException {
 
+      // TODO: getContextField() required, otherwise check all items of the input file
+      //final String[] fields = contextData.getContextFields();
+      final List<String> partItems = Arrays.asList("coordX", "coordY", "score"); // todo remove
+      int j=0;
+      final StringBuilder sb = new StringBuilder();
+      final String[] tokens = value.toString().trim().split("," );
+      for( String token : tokens ) {
+        if( partItems.contains( "coordX" ) && ( j == 1 || j == 13 ) ) {
+          sb.append( token );
+          sb.append( "," );
+        }
+        if( partItems.contains( "coordY" ) && ( j == 2 || j == 14 ) ) {
+          sb.append(token);
+          sb.append(",");
+        }
+        if( partItems.contains( "$date" ) && ( j == 7 || j == 19 ) ) {
+          sb.append( token );
+          sb.append( "," );
+        }
+        if( partItems.contains( "score" ) && ( j == 9 || j == 21 ) ) {
+          sb.append( token );
+          sb.append( "," );
+        }
+        j++;
+      }
+      sb.deleteCharAt( sb.length() - 1 );
+
       final Geometry shape;
       final NRectangle nrect;
 
       // --- parse the geometry and updates the statistics ---------------------
 
       if( inputType.equalsIgnoreCase( wktFormat ) ) {
-        shape = readWktGeometry( value.toString().trim() );
+        //shape = readWktGeometry( value.toString().trim() );
+        shape = readWktGeometry( sb.toString() );
         System.out.println(shape);
         nrect = null;
         geomCounter = geomCounter + 1;
@@ -631,7 +659,10 @@ public class OneGrid extends Configured {
 
       } else {
         shape = null;
-        nrect = new NRectangle( value.toString().trim() );
+
+        //nrect = new NRectangle( value.toString().trim() );
+        nrect = new NRectangle( sb.toString() );
+
         if( nrect.isValid ) {
           geomCounter = geomCounter + 1;
           avgArea = ( avgArea * (double) ( geomCounter - 1 )
@@ -648,9 +679,6 @@ public class OneGrid extends Configured {
                     / geomCounter;
         }
       }
-
-      // todo remove
-      //System.out.println("avgArea: " + avgArea + " avgX: " + avgX + " avgY: " + avgY + " avgVert: " + avgVert);
 
       // -- check the cells that are intersected by the shape geometry ---------
 
@@ -1663,8 +1691,8 @@ public class OneGrid extends Configured {
               partitionType[i] = "RTree";
               System.out.printf( "Call to Rtree[%d]: "
                                  + "orig %.15f, "
-                                 + "size %.15f,"
-                                 + "tileSide %.15f,"
+                                 + "size %.15f, "
+                                 + "tileSide %.15f, "
                                  + "threshold %.15f.%n",
                                  i, orig, size,
                                  ngrid0.tileSide.get( i ),

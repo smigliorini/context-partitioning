@@ -23,18 +23,14 @@ public class NRectangle {
    * @param value
    */
 
-  public NRectangle(String value ) {
-    //Pattern p = Pattern.compile("(-?\\d+[.|,]\\d+)"); //originale
+  public NRectangle( String value ) {
     StringTokenizer st = new StringTokenizer( value, "," );
     ArrayList<Double> al = new ArrayList<Double>();
-    //Matcher m = p.matcher(value);
-    while( st.hasMoreTokens() ) {
-      String tmp = st.nextToken();
-      //tmp = tmp.replace(',', '.');
-      al.add( Double.parseDouble( tmp ) );
-      // todo remove
-      //System.out.println("tmp: " + tmp);
 
+    // TODO: input file dependent -> OneGrid 632
+    while( st.hasMoreTokens() ) {
+      final String token = st.nextToken();
+      al.add( Double.parseDouble( token ) );
     }
 
     if( al.size() % 2 != 0 ) {
@@ -52,8 +48,7 @@ public class NRectangle {
       this.coordMin.add( al.get( i ) );
       this.coordMax.add( al.get( i + this.dim ) );
       diff = al.get( i + this.dim ) - al.get( i );
-      // todo remove
-      //System.out.println("coordMin: " + coordMin + " coordMax: " + coordMax);
+
       if( diff < 0 ) {
         this.isValid = false;
         return;
