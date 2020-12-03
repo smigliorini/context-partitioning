@@ -27,7 +27,6 @@ public class NRectangle {
     StringTokenizer st = new StringTokenizer( value, "," );
     ArrayList<Double> al = new ArrayList<Double>();
 
-    // TODO: input file dependent -> OneGrid 632
     while( st.hasMoreTokens() ) {
       final String token = st.nextToken();
       al.add( Double.parseDouble( token ) );

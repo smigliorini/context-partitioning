@@ -5,9 +5,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import edu.umn.cs.spatialHadoop.OperationsParams;
 import edu.umn.cs.spatialHadoop.indexing.Partition;
-import it.univr.restaurant.descriptors.Grid;
-import it.univr.restaurant.descriptors.NGrid;
-import it.univr.restaurant.descriptors.NRectangle;
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.util.Pair;
@@ -78,6 +75,7 @@ public class OneGrid extends Configured {
   private static final String inputTypeLabel = "inputType";
   private static final String numDimsLabel = "dim";
   private static final String moranIndexLabel = "MoranIndex";
+  private static final String contextPartLabel = "context";
 
   private static final Long cardIndex = -1L;
   private static final Long avgAreaIndex = -2L;
@@ -97,6 +95,7 @@ public class OneGrid extends Configured {
 
   private String mbr;
   private int numReducers;
+  private Integer[] contextPart;
   private Path inputPath;
   private Path outputPath;
   private String inputType;
@@ -174,6 +173,10 @@ public class OneGrid extends Configured {
     }
     // kind of computation: oneGrid or multipleGrid
     conf.set( algoTypeLabel, oneGridAlgorithm );
+    // number of context fields
+    for( int i = 0; i < o.numDims; i++ ) {
+      conf.setInt( contextPartLabel + i, o.contextPart[i] );
+    }
     // input file
     conf.set( inputFileLabel, o.inputPath.toString() );
     // kind of CSV or WKT or CSV_multi
@@ -182,7 +185,6 @@ public class OneGrid extends Configured {
     conf.setInt( numDimsLabel, o.numDims );
     // flag for the computation of the Moran's Index
     conf.setBoolean( moranIndexLabel, o.moranIndex.equalsIgnoreCase( "MI" ) );
-
     // kind of separator
     conf.set( "mapreduce.input.keyvaluelinerecordreader.key.value.separator", "\t" );
 
@@ -351,9 +353,9 @@ public class OneGrid extends Configured {
   }
 
   private boolean checkArguments( String[] args ) {
-    if( args.length != 7 ) {
+    if( args.length != 8 ) {
       System.out.printf
-        ( "Invalid number of arguments: %d, required: %d.%n", args.length, 7 );
+        ( "Invalid number of arguments: %d, required: %d.%n", args.length, 8 );
       for( int i = 0; i < args.length; i++ ) {
         System.out.printf( "args[%d] = %s.%n", i, args[i] );
       }
@@ -383,8 +385,31 @@ public class OneGrid extends Configured {
     }
 
     this.moranIndex = args[4];
-    this.inputPath = new Path( args[5] );
-    this.outputPath = new Path( args[6] );
+
+    final String tmp = args[5];
+    if( !tmp.contains(contextPartLabel) ) {
+      System.out.printf( "Invalid context: %s.%n", args[5] );
+      printMenu();
+      return false;
+    }
+
+    final int start = tmp.indexOf( "=" );
+    if( start == -1 ) {
+      throw new IllegalArgumentException( format( "Illegal context specification: %s", tmp ));
+    }
+
+    this.contextPart = new Integer[numDims];
+    final String value = tmp.substring( start+1 );
+    int i=0;
+    final StringTokenizer tk = new StringTokenizer( value, "," );
+    while( tk.hasMoreTokens() ) {
+      final String token = tk.nextToken();
+      contextPart[i] = Integer.parseInt( token );
+      i++;
+    }
+
+    this.inputPath = new Path( args[6] );
+    this.outputPath = new Path( args[7] );
 
     return true;
   }
@@ -401,8 +426,9 @@ public class OneGrid extends Configured {
         + "<mbr (Rectangle: (xmin,ymin,...)-(xmax,ymax,...) or compute)> " // 2
         + "<cell_side (0.0 if mbr=compute)> " // 3
         + "<moran_index (MI|noMI)> " // 4
-        + "<input_path> " // 5
-        + "<output_path>%n", // 6
+        + "<context> " // 5
+        + "<input_path> " // 6
+        + "<output_path>%n", // 7
         wktFormat, csvFormat, csvMultiFormat );
   }
 
@@ -541,6 +567,7 @@ public class OneGrid extends Configured {
     // === Properties ==========================================================
 
     private Double[] cellSides = new Double[maxNumDims];
+    private Integer[] contextPart;
     private List<Grid> grids = new ArrayList<Grid>( numGrids );
     private List<NGrid> nGrids = new ArrayList<NGrid>( numGrids );
     private List<HashMap<Long, Long>> boxCounts = new ArrayList<HashMap<Long, Long>>( numGrids );
@@ -576,6 +603,11 @@ public class OneGrid extends Configured {
         cellSides[i] = conf.getDouble( cellSideLabel + i, 0.0 );
       }
 
+      this.contextPart = new Integer[numDims];
+      for( int i = 0; i < numDims; i++ ) {
+        contextPart[i] = conf.getInt( contextPartLabel + i, -1 ); // TODO: default value
+      }
+
       System.out.printf( "%s%s start ...%n", mapPhaseLabel, setupMethodLabel );
       System.out.printf( "%s%s cell sides: ", mapPhaseLabel, setupMethodLabel );
       for( int i = 0; i < numDims; i++ ) {
@@ -606,32 +638,21 @@ public class OneGrid extends Configured {
     public void map( LongWritable key, Text value, Context context )
       throws IOException, InterruptedException {
 
-      // TODO: getContextField() required, otherwise check all items of the input file
-      //final String[] fields = contextData.getContextFields();
-      final List<String> partItems = Arrays.asList("coordX", "coordY", "score"); // todo remove
-      int j=0;
-      final StringBuilder sb = new StringBuilder();
+      // --- take only context value ---------------------
+
       final String[] tokens = value.toString().trim().split("," );
-      for( String token : tokens ) {
-        if( partItems.contains( "coordX" ) && ( j == 1 || j == 13 ) ) {
-          sb.append( token );
-          sb.append( "," );
-        }
-        if( partItems.contains( "coordY" ) && ( j == 2 || j == 14 ) ) {
-          sb.append(token);
-          sb.append(",");
-        }
-        if( partItems.contains( "$date" ) && ( j == 7 || j == 19 ) ) {
-          sb.append( token );
-          sb.append( "," );
-        }
-        if( partItems.contains( "score" ) && ( j == 9 || j == 21 ) ) {
-          sb.append( token );
-          sb.append( "," );
-        }
-        j++;
+      final int init = tokens.length / 2;
+
+      final StringBuilder sbLeft = new StringBuilder();
+      final StringBuilder sbRight = new StringBuilder();
+
+      for( int num : contextPart) {
+        sbLeft.append( tokens[num] ).append( "," );
+        sbRight.append( tokens[init+num] ).append( "," );
       }
-      sb.deleteCharAt( sb.length() - 1 );
+
+      sbRight.deleteCharAt( sbLeft.length()-1 );
+      final String partValue = sbLeft.toString() + sbRight.toString();
 
       final Geometry shape;
       final NRectangle nrect;
@@ -640,7 +661,7 @@ public class OneGrid extends Configured {
 
       if( inputType.equalsIgnoreCase( wktFormat ) ) {
         //shape = readWktGeometry( value.toString().trim() );
-        shape = readWktGeometry( sb.toString() );
+        shape = readWktGeometry( partValue );
         System.out.println(shape);
         nrect = null;
         geomCounter = geomCounter + 1;
@@ -661,7 +682,7 @@ public class OneGrid extends Configured {
         shape = null;
 
         //nrect = new NRectangle( value.toString().trim() );
-        nrect = new NRectangle( sb.toString() );
+        nrect = new NRectangle( partValue );
 
         if( nrect.isValid ) {
           geomCounter = geomCounter + 1;
@@ -701,7 +722,8 @@ public class OneGrid extends Configured {
         if( nrect == null || !nrect.isValid ) {
           System.out.printf( "%s%s CASE WKT: rectangle %s is not valid!%n",
                              mapPhaseLabel, mapMethodLabel,
-                             value.toString() );
+                             //value.toString() );
+                             partValue );
           return;
         }
 
