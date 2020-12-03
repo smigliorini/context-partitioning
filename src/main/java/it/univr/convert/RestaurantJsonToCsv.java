@@ -13,13 +13,13 @@ import java.util.Map;
 import static java.lang.String.format;
 
 public class RestaurantJsonToCsv {
-    static final Logger LOGGER = LogManager.getLogger(RestaurantJsonToCsv.class);
+    static final Logger LOGGER = LogManager.getLogger( RestaurantJsonToCsv.class );
 
-    public static void main (String... args) {
-        runJsonToCsv(args);
+    public static void main( String... args ) {
+        runJsonToCsv( args );
     }
 
-    public static void runJsonToCsv(String ... args) {
+    public static void runJsonToCsv( String ... args ) {
         String pathJson, pathCsv;
         String[] headers = new String[0];
 
@@ -27,17 +27,17 @@ public class RestaurantJsonToCsv {
             // TODO
             if ( args.length == 1 ) {
                 pathJson = args[0];
-                pathCsv = pathJson.replace(".json", ".csv");
+                pathCsv = pathJson.replace( ".json", ".csv" );
             } else {
                 pathJson = args[0];
                 pathCsv = args[1];
             }
             // args header to keep
-            if ( args.length > 2) {
-                headers = Arrays.copyOfRange(args, 2, args.length);
+            if ( args.length > 2 ) {
+                headers = Arrays.copyOfRange( args, 2, args.length );
             }
             // Convert row-like mapping JSON without header line
-            JsonToCsv(pathJson, pathCsv, headers);
+            JsonToCsv( pathJson, pathCsv, headers );
         } else {
             LOGGER.error( format( "Invalid number of parameters: %d.", args.length ) );
         }
@@ -49,8 +49,8 @@ public class RestaurantJsonToCsv {
      * @param pathJson      The file to write (included the path)
      * @param headers       The header string to keep
      */
-    public static void JsonToCsv(String pathJson, String pathCsv, String[] headers) {
-        JsonToCsv(pathJson, pathCsv, false, false, headers);
+    public static void JsonToCsv( String pathJson, String pathCsv, String[] headers ) {
+        JsonToCsv( pathJson, pathCsv, false, false, headers );
     }
 
     /**
@@ -58,14 +58,19 @@ public class RestaurantJsonToCsv {
      * @param pathCsv       The file to read (included the path)
      * @param pathJson      The file to write (included the path)
      * @param mapping       True array-like mapping, row-like mapping otherwise
-     * @param withHeader    True with header line, without header line otherwise
+     * @param headerLine    True with header line, without header line otherwise
      * @param headers       The header string to keep
      */
-    public static void JsonToCsv(String pathJson, String pathCsv, boolean mapping, boolean withHeader, String[] headers) {
-        List<Map<String, String>> flatCsv;
+    public static void JsonToCsv
+    ( String pathJson,
+      String pathCsv,
+      boolean mapping,
+      boolean headerLine,
+      String[] headers ) {
+
         // Parse JSON file
-        flatCsv = JSONFlat.parseJson(new File(pathJson), mapping);
+        final List<Map<String, String>> flatCsv = JSONFlat.parseJson( new File( pathJson ), mapping );
         // Write CSV file
-        CSVRestaurant.write(flatCsv, pathCsv, withHeader, headers);
+        CSVRestaurant.write( flatCsv, pathCsv, headerLine, headers );
     }
 }

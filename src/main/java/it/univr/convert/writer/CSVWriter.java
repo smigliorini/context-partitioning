@@ -9,37 +9,28 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static java.lang.String.format;
+
+
 /**
  * The CSVWriter class write the key value pairs to the specified file.
  */
 public class CSVWriter {
 
-    static final Logger LOGGER = LogManager.getLogger(CSVWriter.class);
+    static final Logger LOGGER = LogManager.getLogger( CSVWriter.class );
     public static final String CHARSET_DEFAULT = "UTF-8";
-
-    /**
-     * Convert the given List of String keys-values as a CSV String without header line and
-     * decide witch header to keep.
-     *
-     * @param flatJson  The List of key-value pairs generated from the JSON String
-     * @param headers   The header string to keep
-     * @return a generated CSV string
-     */
-    public static String getCSV(List<Map<String, String>> flatJson, String[] headers) {
-        return getCSV(flatJson, false, headers);
-    }
 
     /**
      * Convert the given List of String keys-values as a CSV String with/without header line and
      * decide witch header to keep.
      *
      * @param flatJson      The List of key-value pairs generated from the JSON String
-     * @param withHeader   True with header line, without header line otherwise
-     * @param headers       The header string to keep
+     * @param headerLine    True with header line, without header line otherwise
+     * @param headers       The header list to keep
      * @return a generated CSV string
      */
-    public static String getCSV(List<Map<String, String>> flatJson, boolean withHeader, String[] headers) {
-        return getCSV(flatJson, withHeader, headers);
+    public static String getCSV( List<Map<String, String>> flatJson, boolean headerLine, String[] headers ) {
+        return getCSV( flatJson, headerLine, headers );
     }
 
     /**
@@ -48,49 +39,55 @@ public class CSVWriter {
      *
      * @param flatJson      The List of key-value pairs generated from the JSON String
      * @param separator     The separator can be: ',', ';' or '\t'
-     * @param withHeader   True with header line, without header line otherwise
+     * @param headerLine   True with header line, without header line otherwise
      * @param headers       The header string to keep
      * @return a generated CSV string
      */
-    public static String getCSV(List<Map<String, String>> flatJson, String separator, boolean withHeader, String[] headers) {
-        Set<String> headersSet = collectHeaders(flatJson, headers);
-        StringBuilder csvString = new StringBuilder();
+    public static String getCSV
+    ( List<Map<String, String>> flatJson,
+      String separator, boolean headerLine,
+      String[] headers ) {
 
-        if (withHeader) {
-            csvString = new StringBuilder(StringUtils.join(headersSet.toArray(), separator) + "\n");
+        final List<String> fields = collectHeaders( flatJson, headers );
+        final StringBuilder csvString = new StringBuilder();
+
+        if( headerLine ) {
+            csvString.append( StringUtils.join( fields, separator ) ).append("\n");
         }
 
-        for (Map<String, String> map : flatJson) {
-            csvString.append(getSeparatedColumns(headersSet, map, separator)).append("\n");
+        for( Map<String, String> map : flatJson ) {
+            csvString.append( getSeparatedColumns( fields, map, separator ) ).append("\n");
         }
 
         return csvString.toString();
     }
 
     /**
-     * Get the CSV header from selection and check if exists.
+     * Get the CSV header from selection and check if exists,
+     * if you do not choose the headers all are added.
      *
      * @param flatJson The List of key-value pairs generated from the JSONObject
-     * @param headers  The header string to keep
+     * @param headers  The header list to keep
      * @return a Set of headers
      */
-    private static Set<String> collectHeaders(List<Map<String, String>> flatJson, String[] headers) {
-        Set<String> set = collectHeaders(flatJson);
-        Set<String> headersSet = new LinkedHashSet<>();
+    private static List<String> collectHeaders( List<Map<String, String>> flatJson, String[] headers ) {
+        final List<String> fields = collectHeaders( flatJson );
 
-        if (headers.length == 0) {
-            headersSet = set;
-        } else {
-            for (String header : headers) {
-                if (set.contains(header)) {
-                    headersSet.add(header);
-                } else {
-                    LOGGER.warn("The header '" + header + "' not exists");
-                }
+        if( headers.length == 0 ) {
+            return fields;
+        }
+
+        List<String> fieldsToKeep = new ArrayList<>();
+
+        for( String header : headers ) {
+            if( fields.contains( header ) ) {
+                fieldsToKeep.add( header );
+            } else {
+                LOGGER.warn( format( "The header '%s' does not exist.", header ) );
             }
         }
 
-        return headersSet;
+        return fieldsToKeep;
     }
 
     /**
@@ -99,14 +96,14 @@ public class CSVWriter {
      * @param flatJson The List of key-value pairs generated from the JSONObject
      * @return a Set of headers
      */
-    private static Set<String> collectHeaders(List<Map<String, String>> flatJson) {
-        Set<String> headersSet = new LinkedHashSet<>();
+    private static List<String> collectHeaders( List<Map<String, String>> flatJson ) {
+        List<String> headers = new ArrayList<>();
 
-        for (Map<String, String> map : flatJson) {
-            headersSet.addAll(map.keySet());
+        for( Map<String, String> map : flatJson ) {
+            headers.addAll( map.keySet() );
         }
 
-        return headersSet;
+        return headers;
     }
 
     /**
@@ -117,14 +114,15 @@ public class CSVWriter {
      * @param separator The separator can be: ',', ';' or '\t'
      * @return a string composed of columns separated by a specific separator.
      */
-    private static String getSeparatedColumns(Set<String> headers, Map<String, String> map, String separator) {
-        List<String> items = new ArrayList<>();
-        for (String header : headers) {
-            String value = map.get(header) == null ? "" : map.get(header).replaceAll("[\\,\\;\\r\\n\\t\\s]+", " ");
-            items.add(value);
-        }
+    private static String getSeparatedColumns( List<String> headers, Map<String, String> map, String separator ) {
+        List<String> fields = new ArrayList<>();
 
-        return StringUtils.join(items.toArray(), separator);
+        for( String header : headers ) {
+            final String value = map.get( header ) == null ? "" :
+                    map.get( header ).replaceAll("[\\,\\;\\r\\n\\t\\s]+", " ");
+            fields.add( value );
+        }
+        return StringUtils.join( fields, separator );
     }
 
     /**
@@ -144,11 +142,11 @@ public class CSVWriter {
      * @param fileName   The file to write (included the path)
      * @param encoding   The character encoding
      */
-    public static void writeToFile(String csvString, String fileName, String encoding) {
+    public static void writeToFile( String csvString, String fileName, String encoding ) {
         try {
-            FileUtils.write(new File(fileName), csvString, encoding);
-        } catch (IOException e) {
-            LOGGER.error("CSVWriter#writeToFile(csvString, fileName, encoding) IOException: ", e);
+            FileUtils.write( new File(fileName), csvString, encoding );
+        } catch ( IOException e ) {
+            LOGGER.error( "CSVWriter#writeToFile(csvString, fileName, encoding) IOException: ", e );
         }
     }
 }

@@ -15,7 +15,8 @@ import java.util.*;
  *  The JSONFlat class create list of key-value pairs for the generated JSON
  */
 public class JSONFlat {
-    static final Logger LOGGER = LogManager.getLogger(JSONFlat.class);
+    static final Logger LOGGER = LogManager.getLogger( JSONFlat.class );
+
     private static final Class<?> JSON_OBJECT = JSONObject.class;
     private static final Class<?> JSON_ARRAY = JSONArray.class;
     public static final String CHARSET_DEFAULT = "UTF-8";
@@ -27,9 +28,8 @@ public class JSONFlat {
      * @param mapping   True row-like mapping, array-like mapping otherwise
      * @return a List of key-value pairs generated from the JSON file
      */
-    public static List<Map<String, String>> parseJson(File file, boolean mapping) {
-        if (!mapping) return parseJsonRows(file, CHARSET_DEFAULT);
-        else return parseJsonFile(file, CHARSET_DEFAULT);
+    public static List<Map<String, String>> parseJson( File file, boolean mapping ) {
+        return parseJson( file, mapping, CHARSET_DEFAULT );
     }
 
     /**
@@ -40,9 +40,9 @@ public class JSONFlat {
      * @param mapping   True row-like mapping, array-like mapping otherwise
      * @return a List of key-value pairs generated from the JSON file
      */
-    public static List<Map<String, String>> parseJson(File file, boolean mapping, String encoding) {
-        if (!mapping) return parseJsonRows(file, encoding);
-        else return parseJsonFile(file, encoding);
+    public static List<Map<String, String>> parseJson( File file, boolean mapping, String encoding ) {
+        if( !mapping ) return parseJsonRows( file, encoding );
+        else return parseJsonFile( file, encoding );
     }
 
     /**
@@ -52,16 +52,16 @@ public class JSONFlat {
      * @return a List of key-value pairs generated from the JSON String
      * @throws Exception Handle the JSON String as JSON Array
      */
-    public static List<Map<String, String>> parseJson(String json) {
+    public static List<Map<String, String>> parseJson( String json ) {
         List<Map<String, String>> flatJson = null;
 
         try {
-            JSONObject jsonObject = new JSONObject(json);
+            final JSONObject jsonObject = new JSONObject( json );
             flatJson = new ArrayList<>();
-            flatJson.add(parse(jsonObject));
-        } catch (JSONException je) {
-            //LOGGER.info("Handle the JSON String as JSON Array");
-            flatJson = handleAsArray(json);
+            flatJson.add( parse( jsonObject ) );
+        } catch( JSONException je ) {
+            //LOGGER.info( "Handle the JSON String as JSON Array" );
+            flatJson = handleAsArray( json );
         }
 
         return flatJson;
@@ -74,12 +74,12 @@ public class JSONFlat {
      * @param encoding  The character encoding
      * @return a List of key-value pairs generated from the JSON file
      */
-    private static List<Map<String, String>> parseJsonRows(File file, String encoding) {
+    private static List<Map<String, String>> parseJsonRows( File file, String encoding ) {
         List<Map<String, String>> flatJson = null;
         try {
-            List<String> lines = FileUtils.readLines(file, encoding);
-            flatJson = JSONFlat.parseJson(lines.toString());
-        } catch (IOException e) {
+            List<String> lines = FileUtils.readLines( file, encoding );
+            flatJson = JSONFlat.parseJson( lines.toString() );
+        } catch( IOException e ) {
             LOGGER.error("JsonFlat#ParseJsonRows(file, encoding) IOException: ", e);
         }
 
@@ -93,19 +93,17 @@ public class JSONFlat {
      * @param encoding  The character encoding
      * @return a List of key-value pairs generated from the JSON file
      */
-    private static List<Map<String, String>> parseJsonFile(File file, String encoding) {
+    private static List<Map<String, String>> parseJsonFile( File file, String encoding ) {
         List<Map<String, String>> flatJson = null;
-        String json = "";
 
         try {
-            json = FileUtils.readFileToString(file, encoding);
+            final String json = FileUtils.readFileToString( file, encoding );
             flatJson = parseJson(json);
-        } catch (IOException e) {
+        } catch( IOException e ) {
             LOGGER.error("JsonFlat#ParseJsonFile(file, encoding) IOException: ", e);
-        } catch (Exception ex) {
+        } catch( Exception ex ) {
             LOGGER.error("JsonFlat#ParseJsonFile(file, encoding) Exception: ", ex);
         }
-
         return flatJson;
     }
 
@@ -116,13 +114,13 @@ public class JSONFlat {
      * @return a List of key-value pairs generated from the JSON String
      * @throws Exception JSON might be malformed
      */
-    private static List<Map<String, String>> handleAsArray(String json) {
+    private static List<Map<String, String>> handleAsArray( String json ) {
         List<Map<String, String>> flatJson = null;
 
         try {
-            JSONArray jsonArray = new JSONArray(json);
-            flatJson = parse(jsonArray);
-        } catch (Exception e) {
+            final JSONArray jsonArray = new JSONArray(json);
+            flatJson = parse( jsonArray );
+        } catch ( Exception e ) {
             LOGGER.error("JSON might be malformed, Please verify that your JSON is valid");
         }
 
@@ -134,9 +132,9 @@ public class JSONFlat {
      * @param jsonObject  JSON Object
      * @return a map of key-value pairs generated from the JSON Object
      */
-    private static Map<String, String> parse(JSONObject jsonObject) throws JSONException {
+    private static Map<String, String> parse( JSONObject jsonObject ) throws JSONException {
         Map<String, String> flatJson = new LinkedHashMap<>();
-        flatten(jsonObject, flatJson, "");
+        flatten( jsonObject, flatJson, "" );
 
         return flatJson;
     }
@@ -147,17 +145,14 @@ public class JSONFlat {
      * @param jsonArray JSON Array
      * @return a List of key-value pairs generated from the JSON Array
      */
-    private static List<Map<String, String>> parse(JSONArray jsonArray) throws JSONException {
-        JSONObject jsonObject = null;
+    private static List<Map<String, String>> parse( JSONArray jsonArray ) throws JSONException {
         List<Map<String, String>> flatJson = new ArrayList<>();
-        int length = jsonArray.length();
 
-        for (int i = 0; i < length; i++) {
-            jsonObject = jsonArray.getJSONObject(i);
-            Map<String, String> stringMap = parse(jsonObject);
-            flatJson.add(stringMap);
+        for( int i = 0; i < jsonArray.length(); i++ ) {
+            final JSONObject jsonObject = jsonArray.getJSONObject( i );
+            final Map<String, String> stringMap = parse( jsonObject );
+            flatJson.add( stringMap );
         }
-
         return flatJson;
     }
 
@@ -171,29 +166,31 @@ public class JSONFlat {
      * @param flatJson  The map of key-value pairs generated
      * @param prefix    prefix
      */
-    private static void flatten(JSONObject obj, Map<String, String> flatJson, String prefix) throws JSONException {
-        Iterator<?> iterator = obj.keys();
-        String _prefix = !prefix.equals("") ? prefix + "." : "";
+    private static void flatten( JSONObject obj, Map<String, String> flatJson, String prefix )
+            throws JSONException {
 
-        while (iterator.hasNext()) {
-            String key = iterator.next().toString();
+        final Iterator<?> iterator = obj.keys();
+        final String _prefix = !prefix.equals("") ? prefix + "." : "";
 
-            if (obj.get(key).getClass() == JSON_OBJECT) {
-                JSONObject jsonObject = (JSONObject) obj.get(key);
-                flatten(jsonObject, flatJson, _prefix + key);
-            } else if (obj.get(key).getClass() == JSON_ARRAY) {
-                JSONArray jsonArray = (JSONArray) obj.get(key);
+        while( iterator.hasNext() ) {
+            final String key = iterator.next().toString();
 
-                if (jsonArray.length() < 1) {
+            if( obj.get( key ).getClass() == JSON_OBJECT ) {
+                final JSONObject jsonObject = (JSONObject) obj.get( key );
+                flatten( jsonObject, flatJson, _prefix + key );
+            } else if( obj.get(key).getClass() == JSON_ARRAY ) {
+                JSONArray jsonArray = (JSONArray) obj.get( key) ;
+
+                if( jsonArray.length() < 1 ) {
                     continue;
                 }
 
-                flatten(jsonArray, flatJson, _prefix + key);
+                flatten( jsonArray, flatJson, _prefix + key );
             } else {
-                String value = obj.get(key).toString();
+                final String value = obj.get(key).toString();
 
-                if (value != null && !value.equals("null")) {
-                    flatJson.put(_prefix + key, value);
+                if( value != null && !value.equals( "null" ) ) {
+                    flatJson.put( _prefix + key, value );
                 }
             }
         }
@@ -206,27 +203,26 @@ public class JSONFlat {
      * @param flatJson  The map of key-value pairs generated
      * @param prefix    prefix
      */
-    private static void flatten(JSONArray obj, Map<String, String> flatJson, String prefix) throws JSONException {
-        int length = obj.length();
+    private static void flatten( JSONArray obj, Map<String, String> flatJson, String prefix )
+            throws JSONException {
 
-        for (int i = 0; i < length; i++) {
-            if (obj.get(i).getClass() == JSON_ARRAY) {
-                JSONArray jsonArray = (JSONArray) obj.get(i);
+        for( int i = 0; i < obj.length(); i++ ) {
+            if( obj.get( i ).getClass() == JSON_ARRAY ) {
+                final JSONArray jsonArray = (JSONArray) obj.get( i );
 
                 // jsonArray is empty
-                if (jsonArray.length() < 1) {
+                if( jsonArray.length() < 1 ) {
                     continue;
                 }
-
-                flatten(jsonArray, flatJson, prefix + '[' + i + ']');
-            } else if (obj.get(i).getClass() == JSON_OBJECT) {
-                JSONObject jsonObject = (JSONObject) obj.get(i);
-                flatten(jsonObject, flatJson, prefix + '[' + (i + 1) + ']');
+                flatten( jsonArray, flatJson, prefix + '[' + i + ']' );
+            } else if( obj.get( i ).getClass() == JSON_OBJECT ) {
+                final JSONObject jsonObject = (JSONObject) obj.get( i );
+                flatten( jsonObject, flatJson, prefix + '[' + ( i + 1 ) + ']' );
             } else {
-                String value = obj.get(i).toString();
+                String value = obj.get( i ).toString();
 
-                if (value != null) {
-                    flatJson.put(prefix + "[" + (i + 1) + "]", value);
+                if( value != null ) {
+                    flatJson.put( prefix + '[' + ( i + 1 ) + ']', value );
                 }
             }
         }
