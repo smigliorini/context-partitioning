@@ -1,5 +1,6 @@
 package it.univr.restaurant.hadoop;
 
+import it.univr.restaurant.RestaurantWritable;
 import it.univr.restaurant.descriptors.OneGrid;
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
@@ -102,6 +103,7 @@ public class ContextBasedPartitioner {
       ( config, inputFormatClass, false );
 
     final int numDims = mmbox.getLeft().getContextFields().length;
+    final List<String> fields = Arrays.asList( mmbox.getLeft().getContextFields() );
 
     if( mmbox != null ) {
       Job job = getJob( mmbox.getLeft(), mmbox.getRight(), config );
@@ -117,6 +119,7 @@ public class ContextBasedPartitioner {
             config.getFileInputPaths().get( 0 ).toUri().getRawPath(),
             config.getGridPath().toUri().getRawPath(),
             numDims,
+            fields,
             config.cellSide );
       }
 
@@ -307,8 +310,20 @@ public class ContextBasedPartitioner {
     String inputPath,
     String gridPath,
     Integer numDims,
+    List<String> fields,
     Double cellSide )
     throws Exception {
+
+    final String prefix = "context=";
+    final StringBuilder sb = new StringBuilder(prefix);
+
+    // devono essere in ordine
+    if( fields.contains("coordX"))  sb.append(1).append(",");
+    if( fields.contains("coordY"))  sb.append(2).append(",");
+    if( fields.contains("$date"))  sb.append(7).append(",");
+    if( fields.contains("score"))  sb.append(9).append(",");
+
+    sb.deleteCharAt( sb.length()-1 );
 
     final String[] args = new String[]{
       OneGrid.csvMultiFormat,
@@ -316,6 +331,8 @@ public class ContextBasedPartitioner {
       OneGrid.computeMbrPar,
       cellSide.toString(),
       "noMI",
+      //"context=1,2,7,9",
+      sb.toString(),
       inputPath,
       gridPath,
     };

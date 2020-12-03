@@ -71,10 +71,10 @@ public class StatsUtils {
     try( BufferedWriter bw = new BufferedWriter( new FileWriter( outputFile ) ) ) {
       bw.write( String.format( "Split%s"
                                + "NumRows%s"
-                               + "RSD coordX%s"
-                               + "RSD coordY%s"
-                               + "RSD $date%s"
-                               + "RSD score%s"
+                               + "RSD x%s"
+                               + "RSD y%s"
+                               + "RSD d%s"
+                               + "RSD s%s"
                                + "%n",
                                separator, separator,
                                separator, separator,
@@ -236,14 +236,14 @@ public class StatsUtils {
               boundaries.updateMaxScore( s );
               i++;
               break;
-            case 0: // building
-            case 3: // street
-            case 4: // zipcode
-            case 5: // borough
-            case 6: // cuisine
-            case 8: // grade
-            case 10: // name
-            case 11: // restaurantId
+            case 0:   // building
+            case 3:   // street
+            case 4:   // zipcode
+            case 5:   // borough
+            case 6:   // cuisine
+            case 8:   // grade
+            case 10:  // name
+            case 11:  // restaurantId
               i++;
               break;
           }//*/

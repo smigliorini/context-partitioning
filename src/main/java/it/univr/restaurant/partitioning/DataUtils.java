@@ -417,7 +417,6 @@ public class DataUtils {
           break;
         case 4: // zipcode
           try {
-            //r.setZipcode( Double.parseDouble( token ) );
             r.setZipcode( Integer.parseInt( token ) );
           } catch ( NumberFormatException e ) {
             r.setZipcode( null );
@@ -442,7 +441,6 @@ public class DataUtils {
           break;
         case 7: // $date
           try {
-            //r.set$date( Long.parseLong( token ) );
             r.set$date( Double.parseDouble( token ) );
           } catch ( NumberFormatException e ) {
             r.set$date( null );
@@ -459,7 +457,6 @@ public class DataUtils {
           break;
         case 9: // score
           try {
-            //r.setScore( Integer.parseInt( token ) );
             r.setScore( Double.parseDouble( token ) );
           } catch ( NumberFormatException e ) {
             r.setScore( null );
@@ -476,7 +473,6 @@ public class DataUtils {
           break;
         case 11: // restaurantId
           try {
-            //r.setRestaurantId( Double.parseDouble( token ) );
             r.setRestaurantId( Integer.parseInt( token ) );
           } catch ( NumberFormatException e ) {
             r.setRestaurantId( null );

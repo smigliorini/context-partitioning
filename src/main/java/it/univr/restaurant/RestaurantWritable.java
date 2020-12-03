@@ -17,19 +17,15 @@ public class RestaurantWritable
   implements ContextData {
 
   /**
-   * List of fields to be printed in the output file
+   * List of partitioner
    */
-  /*private static final int[] numItems = { 0,1,2,3,4,5,6,8,9,10,11 }; // all items - $date //*/
-  private static final int[] numItems = { 1,2,9,0 }; // coordX, coordY, $date, building //*/
-  /*private static final int[] numItems = { 1,2,7,9 }; // coordX, coordY, $date, score //*/
-  /*private static final int[] numItems = { 1,2,8,11 }; // coordX, coordY, score, grade, restaurantId //*/
-  /*private static final int[] numItems = { 1,2,9,8 }; // coordX, coordY, score, grade //*/
+  private static final int[] partitioner = { 1,2,7,9 }; // all partition //*/
+  /*private static final int[] partitioner = { 1,2 }; // coordX, coordY //*/
 
   /**
    * Fields of the input file
    */
-  private static final String[] attributes = {
-          //"coordX", "coordY", "$date", "score"
+  public static final String[] attributes = {
           "building",
           "coordX",
           "coordY",
@@ -43,11 +39,6 @@ public class RestaurantWritable
           "name",
           "restaurantId"
   };
-
-  /**
-   * Possible fields to partition
-   */
-  private static final String[] partItems = { "coordX", "coordY", "$date", "score" };
 
   static final Logger LOGGER = LogManager.getLogger( RestaurantWritable.class );
 
@@ -68,42 +59,25 @@ public class RestaurantWritable
   @Override
   public String[] getContextFields() {
     //return new String[]{"coordX", "coordY", "$date", "score"};
-    return getContextFields( numItems );
+    return getContextFields( partitioner );
   }
 
-  public String[] getContextFields( int[] ordinal ) {
-    final List<String> writeFields = Arrays.asList( getWriteFields( ordinal ) );
-    final Set<String> partFields = new HashSet<>();
+  public String[] getContextFields( int[] indexFields ) {
+    List<String> partFields = new ArrayList<>();
 
-    for( String pf : partItems ) {
-      if( writeFields.contains(pf) ) {
-        partFields.add(pf);
-      }
+    for( int indexField : indexFields ) {
+      if( indexField >= 0 && indexField < attributes.length  )
+        partFields.add( attributes[indexField] );
+      else
+        LOGGER.warn( format( "Field index %d is not exist.", indexField ) );
     }
 
     if( partFields.size() == 0 ) {
-      LOGGER.error( format( "Context fields array is empty, choose at least two: %s", Arrays.toString(partItems) ) );
+      // TODO
+      LOGGER.error( format( "Context fields array is empty, choose at least two: %s" ) );
       System.exit(-1);
     }
-
     return partFields.toArray( new String[partFields.size()] );
-  }
-
-  public String[] getWriteFields() {
-    return getWriteFields( numItems );
-  }
-
-  public String[] getWriteFields( int[] items ) {
-    List<String> fields = new ArrayList<>();
-
-    for( int fieldNumber : items ) {
-      if( fieldNumber >= 0 && fieldNumber < attributes.length  )
-        fields.add( attributes[fieldNumber] );
-      else
-        LOGGER.warn( format( "Field index %d is not exist.", fieldNumber ) );
-    }
-
-    return fields.toArray( new String[fields.size()] );
   }
 
   @Override
@@ -126,109 +100,39 @@ public class RestaurantWritable
 
   @Override
   public void write( DataOutput out ) throws IOException {
-    /*
-    out.writeDouble( coordX );
-    out.writeDouble( coordY );
-    out.writeDouble( $date );
-    out.writeDouble( score );//*/
-
-    for( String fieldName : getWriteFields() ) {
-      switch( fieldName ) {
-        case "building":
-          // building can be empty string
-          try {
-            out.writeUTF( building.toString() );
-          } catch( NullPointerException e ) {
-            out.writeUTF( "null" );
-          }
-          break;
-        case "coordX":
-          out.writeDouble( coordX );
-          break;
-        case "coordY":
-          out.writeDouble( coordY );
-          break;
-        case "street":
-          out.writeUTF( street.toString() );
-          break;
-        case "zipcode":
-          out.writeInt( zipcode );
-          break;
-        case "borough":
-          out.writeUTF( borough.toString() );
-          break;
-        case "cuisine":
-          out.writeUTF( cuisine.toString() );
-          break;
-        case "$date":
-          out.writeDouble( $date );
-          break;
-        case "grade":
-          out.writeUTF( grade.toString() );
-          break;
-        case "score":
-          out.writeDouble( score );
-          break;
-        case "name":
-          out.writeUTF( name.toString() );
-          break;
-        case "restaurantId":
-          out.writeInt( restaurantId );
-          break;
-      }
+    try {
+      out.writeUTF(building.toString());
+    } catch (NullPointerException e) {
+      // building can be empty string
+      out.writeUTF("null");
     }
+    out.writeDouble(coordX);
+    out.writeDouble(coordY);
+    out.writeUTF(street.toString());
+    out.writeInt(zipcode);
+    out.writeUTF(borough.toString());
+    out.writeUTF(cuisine.toString());
+    out.writeDouble($date);
+    out.writeUTF(grade.toString());
+    out.writeDouble(score);
+    out.writeUTF(name.toString());
+    out.writeInt(restaurantId);
   }
 
   @Override
   public void readFields( DataInput in ) throws IOException {
-    /*
+    building = in.readUTF();
     coordX = in.readDouble();
     coordY = in.readDouble();
-    // $date = in.readLong();
+    street = in.readUTF();
+    zipcode = in.readInt();
+    borough = in.readUTF();
+    cuisine = in.readUTF();
     $date = in.readDouble();
-    // score = in.readInt();
-    score = in.readDouble();//*/
-
-    for( String fieldName : getWriteFields() ) {
-      switch( fieldName ) {
-        case "building":
-          building = in.readUTF();
-          break;
-        case "coordX":
-          coordX = in.readDouble();
-          break;
-        case "coordY":
-          coordY = in.readDouble();
-          break;
-        case "street":
-          street = in.readUTF();
-          break;
-        case "zipcode":
-          zipcode = in.readInt();
-          break;
-        case "borough":
-          borough = in.readUTF();
-          break;
-        case "cuisine":
-          cuisine = in.readUTF();
-          break;
-        case "$date":
-          $date = in.readDouble();
-          break;
-        case "grade":
-          grade = in.readUTF();
-          break;
-        case "score":
-          score = in.readDouble();
-          break;
-        case "name":
-          name = in.readUTF();
-          break;
-        case "restaurantId":
-          restaurantId = in.readInt();
-          break;
-      }
-    }
+    grade = in.readUTF();
+    score = in.readDouble();
+    name = in.readUTF();
+    restaurantId = in.readInt();
   }
 
   @Override
@@ -254,59 +158,30 @@ public class RestaurantWritable
   public String toString( String separator ) {
     final StringBuilder b = new StringBuilder();
 
-      for( String fieldName : getWriteFields() ) {
-        switch( fieldName ) {
-          case "building":
-            b.append( building );
-            b.append( separator );
-            break;
-          case "coordX":
-            b.append( coordX );
-            b.append( separator );
-            break;
-          case "coordY":
-            b.append( coordY );
-            b.append( separator );
-            break;
-          case "street":
-            b.append( street );
-            b.append( separator );
-            break;
-          case "zipcode":
-            b.append( zipcode );
-            b.append( separator );
-            break;
-          case "borough":
-            b.append( borough );
-            b.append( separator );
-            break;
-          case "cuisine":
-            b.append( cuisine );
-            b.append( separator );
-            break;
-          case "$date":
-            b.append( $date );
-            b.append( separator );
-            break;
-          case "grade":
-            b.append( grade );
-            b.append( separator );
-            break;
-          case "score":
-            b.append( score );
-            b.append( separator );
-            break;
-          case "name":
-            b.append( name );
-            b.append( separator );
-            break;
-          case "restaurantId":
-            b.append( restaurantId );
-            b.append( separator );
-            break;
-        }
-      }
-    b.deleteCharAt( b.length() - 1 );
+    b.append( building );
+    b.append( separator );
+    b.append( coordX );
+    b.append( separator );
+    b.append( coordY );
+    b.append( separator );
+    b.append( street );
+    b.append( separator );
+    b.append( zipcode );
+    b.append( separator );
+    b.append( borough );
+    b.append( separator );
+    b.append( cuisine );
+    b.append( separator );
+    b.append( $date );
+    b.append( separator );
+    b.append( grade );
+    b.append( separator );
+    b.append( score );
+    b.append( separator );
+    b.append( name );
+    b.append( separator );
+    b.append( restaurantId );
+
     return b.toString();
   }
 }
