@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.umn.cs.spatialHadoop.core.Rectangle;
+//import edu.umn.cs.spatialHadoop.core.Rectangle;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -21,10 +21,10 @@ import static java.lang.String.format;
 public class Grid {
 
 	/**Origin of the grid*/
-	protected Double x, y;
+	protected Double x, y, z;
 
 	/**End of the grid*/
-	protected double width, height;
+	protected double width, height, depth;
 
 	/**Number of tiles*/
 	protected Long numTiles;
@@ -50,6 +50,7 @@ public class Grid {
 	 * @param mbr minimum bonding rectangle
 	 * @param cellSide lato di ogni cella della griglia
 	 */
+	/*
 	public Grid(Rectangle mbr, double cellSide)
 	{
 		this.x = mbr.x1;
@@ -73,7 +74,8 @@ public class Grid {
 		//	this.cells[i] = 0;
 
 	}
-
+	*/
+	
 	/**
 	 * Crea una griglia in base all'MBR fornito come stringa
 	 * e lato della cella.
@@ -124,14 +126,15 @@ public class Grid {
 			}
 			// al contiene tutte le cordinate
 			if (al.size() < 10) {
-				Rectangle r = new Rectangle(al.get(0), al.get(1), al.get(2), al.get(3));
-				this.x = r.x1;
-				this.y = r.y1;
-				this.width = r.getWidth();
-				this.height = r.getHeight();
-				this.numColumns = (long)Math.ceil(r.getWidth()/cellSide);
-				this.numRows =  this.numColumns;//(int)Math.ceil(r.getHeight()/cellSide);
-				this.tileHeight = r.getHeight()/this.numRows;
+				// AB 30 dic 2020: tolta dipendenza dalla classe Rectangle is SpatialHadoop
+				//Rectangle r = new Rectangle(al.get(0), al.get(1), al.get(2), al.get(3));
+				this.x = al.get(0); //r.x1;
+				this.y = al.get(1); //r.y1;
+				this.width = (al.get(2) - al.get(0));  //r.getWidth();
+				this.height = (al.get(3) - al.get(1)); //r.getHeight();
+				this.numColumns = (long)Math.ceil(this.width/cellSide);
+				this.numRows =  this.numColumns; //(int)Math.ceil(r.getHeight()/cellSide);
+				this.tileHeight = this.height/this.numRows;
 			}
 		}
 		this.numTiles = this.numRows * this.numColumns;
