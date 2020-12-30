@@ -3,8 +3,8 @@ package it.univr.descriptors;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import edu.umn.cs.spatialHadoop.OperationsParams;
-import edu.umn.cs.spatialHadoop.indexing.Partition;
+//import edu.umn.cs.spatialHadoop.OperationsParams;
+//import edu.umn.cs.spatialHadoop.indexing.Partition;
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.util.Pair;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import static edu.umn.cs.spatialHadoop.operations.FileMBR.fileMBR;
+//import static edu.umn.cs.spatialHadoop.operations.FileMBR.fileMBR;
 import static it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce.runMBBoxMapReduce;
 import static java.lang.Double.*;
 import static java.lang.Integer.parseInt;
@@ -426,7 +426,10 @@ public class OneGrid extends Configured {
     if( this.mbr.equals( computeMbrPar ) ) {
       if( this.inputType.equalsIgnoreCase( wktFormat ) ||
           this.inputType.equalsIgnoreCase( csvFormat ) ) {
-
+    	  
+    	System.out.printf("This options is not available in Hadoop 3!");
+    	System.exit(0);
+    	/*
         if( this.inputType.equalsIgnoreCase( wktFormat ) ) {
           confMBR.set( shapePar, wktShape );
         } else if( this.inputType.equalsIgnoreCase( "CSV" ) ) {
@@ -451,6 +454,7 @@ public class OneGrid extends Configured {
 
         this.cellSides[0] = p.getWidth() / 2;
         this.cellSides[1] = p.getHeight() / 2;
+        */
 
       } else if( this.inputType.equalsIgnoreCase( csvMultiFormat ) ) {
         // todo!!!
