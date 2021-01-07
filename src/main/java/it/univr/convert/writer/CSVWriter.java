@@ -1,7 +1,7 @@
 package it.univr.convert.writer;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+//import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -52,7 +52,7 @@ public class CSVWriter {
         final StringBuilder csvString = new StringBuilder();
 
         if( headerLine ) {
-            csvString.append( StringUtils.join( fields, separator ) ).append("\n");
+            csvString.append( String.join( separator, fields ) ).append("\n");
         }
 
         for( Map<String, String> map : flatJson ) {
@@ -122,7 +122,7 @@ public class CSVWriter {
                     map.get( header ).replaceAll("[\\,\\;\\r\\n\\t\\s]+", " ");
             fields.add( value );
         }
-        return StringUtils.join( fields, separator );
+        return String.join( separator, fields );
     }
 
     /**
