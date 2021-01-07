@@ -4,6 +4,7 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
 import it.univr.hadoop.writable.TextPairWritable;
+import it.univr.restaurant.hadoop.mapreduce.multilevel.MultiLevelMiddleReducer;
 import it.univr.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -93,7 +94,7 @@ public class MultiLevelMiddleMapper extends MultiBaseMapper<Text, Text, Text, Co
             FileSystem fileSystem = FileSystem.get(configuration);
             Path path = new Path(outputPath, previousProperty);
             List<FileStatus> fileStatusList = Arrays.stream(fileSystem.listStatus(path)).filter(f -> f.isFile()
-                            && f.getPath().getName().contains(MultiLevelMiddleReducer.MINMAX_FILE_NAME)
+                            && f.getPath().getName().contains( MultiLevelMiddleReducer.MINMAX_FILE_NAME )
                     ).collect(Collectors.toList());
             for(FileStatus fileStatus : fileStatusList) {
                 KeyValueLineRecordReader reader = new KeyValueLineRecordReader(configuration,

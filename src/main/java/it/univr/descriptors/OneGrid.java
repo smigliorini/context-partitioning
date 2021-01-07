@@ -187,6 +187,8 @@ public class OneGrid extends Configured {
     // kind of separator
     conf.set( "mapreduce.input.keyvaluelinerecordreader.key.value.separator", "\t" );
 
+    System.out.printf( "configuration done!%n" );
+
     final Job job = Job.getInstance( conf, "oneGrid" );
     job.setJarByClass( OneGrid.class );
 
@@ -426,7 +428,7 @@ public class OneGrid extends Configured {
     if( this.mbr.equals( computeMbrPar ) ) {
       if( this.inputType.equalsIgnoreCase( wktFormat ) ||
           this.inputType.equalsIgnoreCase( csvFormat ) ) {
-    	  
+
     	System.out.printf("This options is not available in Hadoop 3!");
     	System.exit(0);
     	/*
