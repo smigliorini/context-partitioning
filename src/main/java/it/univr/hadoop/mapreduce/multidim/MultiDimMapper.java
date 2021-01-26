@@ -20,23 +20,23 @@ import static java.lang.String.format;
 
 public class MultiDimMapper <V extends ContextData> extends ContextBasedMapper<LongWritable, ContextData, Text, V> {
 
-    static final Logger LOGGER = LogManager.getLogger(MultiDimMapper.class);
+    static final Logger LOGGER = LogManager.getLogger( MultiDimMapper.class );
 
     @Override
-    protected void setup(Context context) throws IOException, InterruptedException {
-        super.setup(context);
+    protected void setup( Context context ) throws IOException, InterruptedException {
+        super.setup( context );
     }
 
     @Override
-    protected void map(LongWritable key, ContextData contextData, Context context) throws IOException, InterruptedException {
-        StringBuilder keyBuilder = new StringBuilder("part-");
-        for (String property : contextData.getContextFields()) {
-            long value = propertyOperationPartition(property, contextData, context.getConfiguration());
-            keyBuilder.append(format(keyFormat, value));
-            keyBuilder.append("-");
+    protected void map( LongWritable key, ContextData contextData, Context context ) throws IOException, InterruptedException {
+        StringBuilder keyBuilder = new StringBuilder( "part-" );
+        for( String property : contextData.getContextFields( partition ) ) {
+            long value = propertyOperationPartition( property, contextData, context.getConfiguration() );
+            keyBuilder.append( format( keyFormat, value ) );
+            keyBuilder.append( "-" );
         }
-        keyBuilder.deleteCharAt(keyBuilder.length()-1);
-        context.write(new Text(keyBuilder.toString()), (V) contextData);
+        keyBuilder.deleteCharAt( keyBuilder.length()-1 );
+        context.write( new Text(keyBuilder.toString() ), (V) contextData );
     }
 
 

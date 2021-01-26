@@ -11,6 +11,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,15 +26,16 @@ public abstract class MultiBaseMapper<KEYIN, VALUEIN,
   private static final Logger BASE_LOGGER = LogManager.getLogger( MultiBaseMapper.class );
   protected String keyFormat;
 
-
   protected HashMap<String, Pair<Double, Double>> propertyMinMaxMap;
   protected int numCellPerSide;
+  protected Integer[] partition;
 
   @Override
   protected void setup( Context context ) throws IOException, InterruptedException {
     super.setup( context );
     int splitNumberFiles = OperationConf.getSplitNumberFiles( context.getConfiguration() );
     Long contextSetDim = OperationConf.getContextSetDim( context.getConfiguration() );
+    partition = OperationConf.getPartitionFields( context.getConfiguration() );
     propertyMinMaxMap = new HashMap<>( contextSetDim.intValue() );
     final double powerIndex = 1.0 / contextSetDim;
     numCellPerSide = (int) ceil( pow( splitNumberFiles, powerIndex ) );

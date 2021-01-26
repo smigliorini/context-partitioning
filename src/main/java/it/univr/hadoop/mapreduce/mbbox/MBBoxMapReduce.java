@@ -4,6 +4,7 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
+import it.univr.restaurant.RestaurantCSVInputFormat;
 import it.univr.util.Pair;
 import it.univr.util.ReflectionUtil;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
@@ -48,11 +49,17 @@ public class MBBoxMapReduce {
       LOGGER.error( "Invalid input files" );
       System.exit( 1 );
     }
+    if( !configuration.validPartitionFields() ) {
+      LOGGER.error( "Invalid context fields" );
+      System.exit( 1 );
+    }
     Path[] inputPaths = new Path[configuration.getFileInputPaths().size()];
     configuration.getFileInputPaths().toArray( inputPaths );
+    /*Pair<ContextData, ContextData> contextDataContextDataPair = runMBBoxMapReduce( configuration,
+            VeronaCardCSVInputFormat.class, true );//*/
     Pair<ContextData, ContextData> contextDataContextDataPair = runMBBoxMapReduce( configuration,
-                                                                                   VeronaCardCSVInputFormat.class, true );
-    Stream.of( contextDataContextDataPair.getLeft().getContextFields() ).forEach( value -> {
+            RestaurantCSVInputFormat.class, true );//*/
+    Stream.of( contextDataContextDataPair.getLeft().getContextFields( configuration.partition ) ).forEach( value -> {
       Object min = ReflectionUtil.readMethod( value, contextDataContextDataPair.getLeft() );
       Object max = ReflectionUtil.readMethod( value, contextDataContextDataPair.getRight() );
       System.out.println( format( "%s ->(%s, %s)", value, min.toString(), max.toString() ) );

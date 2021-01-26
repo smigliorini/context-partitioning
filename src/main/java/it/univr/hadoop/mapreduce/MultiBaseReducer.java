@@ -1,5 +1,6 @@
 package it.univr.hadoop.mapreduce;
 
+import it.univr.hadoop.conf.OperationConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -17,10 +18,12 @@ public abstract class MultiBaseReducer<KEYIN extends WritableComparable, VIN ext
   private static final Logger BASE_LOGGER = LogManager.getLogger( MultiBaseReducer.class );
   public static String MASTER_FILE_NAME = "_master.grid";
   protected MultipleOutputs<Writable, Writable> multipleOutputs;
+  protected Integer[] partition;
 
   @Override
   protected void setup( Context context ) {
     multipleOutputs = new MultipleOutputs( context );
+    partition = OperationConf.getPartitionFields( context.getConfiguration() );
   }
 
   @Override

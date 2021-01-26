@@ -18,7 +18,7 @@ public interface ContextData extends Writable, WritableComparable<ContextData> {
     /**
      * Retrieve the context fields name, used by the partition technique. The order correspond to index order.
      */
-    String[] getContextFields();
+    String[] getContextFields( Integer[] partition );
 
     /**
      * Read a line and parse It to ContextData Object
@@ -27,6 +27,6 @@ public interface ContextData extends Writable, WritableComparable<ContextData> {
      * @param line
      * @return
      */
-    ContextData parseRecord (String line);
+    ContextData parseRecord( String line );
 
 }

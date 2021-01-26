@@ -10,6 +10,9 @@ import it.univr.hadoop.conf.OperationConf;
 import it.univr.util.Pair;
 import it.univr.util.ReflectionUtil;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
+import it.univr.veronacard.VeronaCardWritable;
+import it.univr.restaurant.RestaurantCSVInputFormat;
+import it.univr.restaurant.RestaurantWritable;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -20,15 +23,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 //import static edu.umn.cs.spatialHadoop.operations.FileMBR.fileMBR;
 import static it.univr.hadoop.mapreduce.mbbox.MBBoxMapReduce.runMBBoxMapReduce;
@@ -79,6 +78,7 @@ public class OneGrid extends Configured {
   private static final String inputTypeLabel = "inputType";
   private static final String numDimsLabel = "dim";
   private static final String moranIndexLabel = "MoranIndex";
+  private static final String posPartLabel = "context";
 
   private static final Long cardIndex = -1L;
   private static final Long avgAreaIndex = -2L;
@@ -102,8 +102,10 @@ public class OneGrid extends Configured {
   private Path outputPath;
   private String inputType;
   private Double[] cellSides; // = new Double[10];
+  private Integer[] posPart; // = new Integer[10];
   private Integer numDims;
   private String moranIndex;
+  Class<? extends FileInputFormat> inputFormatClass;
 
   // === Methods ===============================================================
 
@@ -115,7 +117,8 @@ public class OneGrid extends Configured {
    * @throws InterruptedException
    */
 
-  public OneGrid( String[] args )
+  public OneGrid
+  ( String[] args, Class<? extends FileInputFormat> inputFormatClass )
     throws IOException, InterruptedException, ClassNotFoundException {
 
     if( !checkArguments( args ) ) {
@@ -123,7 +126,10 @@ public class OneGrid extends Configured {
     }
     this.numReducers = 1;
     this.cellSides = new Double[maxNumDims];
+    this.posPart = new Integer[maxNumDims];
+    this.inputFormatClass = inputFormatClass;
 
+    processContextParameter( args[5] );
     processMbrParameter( args[3] );
     recomputeCellSides();
   }
@@ -140,7 +146,8 @@ public class OneGrid extends Configured {
     final long start = System.currentTimeMillis();
     System.out.printf( "START: %d%n", start );
 
-    final int res = run( new OneGrid( args ) );
+    /*final int res = run( new OneGrid( args, VeronaCardCSVInputFormat.class ) );//*/
+    final int res = run( new OneGrid( args, RestaurantCSVInputFormat.class ) );//*/
 
     final long end = System.currentTimeMillis();
     System.out.printf( "END: %d%n", end );
@@ -172,6 +179,10 @@ public class OneGrid extends Configured {
     // cell side for each dimension
     for( int i = 0; i < o.numDims; i++ ) {
       conf.setDouble( cellSideLabel + i, o.cellSides[i] );
+    }
+    // position partitioning fields in csv file
+    for( int i = 0; i < o.numDims; i++ ) {
+      conf.setInt( posPartLabel + i, o.posPart[i] );
     }
     // kind of computation: oneGrid or multipleGrid
     conf.set( algoTypeLabel, oneGridAlgorithm );
@@ -354,9 +365,9 @@ public class OneGrid extends Configured {
   }
 
   private boolean checkArguments( String[] args ) {
-    if( args.length != 7 ) {
+    if( args.length != 8 ) {
       System.out.printf
-        ( "Invalid number of arguments: %d, required: %d.%n", args.length, 7 );
+        ( "Invalid number of arguments: %d, required: %d.%n", args.length, 8 );
       for( int i = 0; i < args.length; i++ ) {
         System.out.printf( "args[%d] = %s.%n", i, args[i] );
       }
@@ -386,9 +397,28 @@ public class OneGrid extends Configured {
     }
 
     this.moranIndex = args[4];
-    this.inputPath = new Path( args[5] );
-    this.outputPath = new Path( args[6] );
 
+    if( !checkPartitionArgument( args[5] ) ) {
+      printMenu();
+      return false;
+    }
+
+    this.inputPath = new Path( args[6] );
+    this.outputPath = new Path( args[7] );
+
+    return true;
+  }
+
+  private boolean checkPartitionArgument(String s ) {
+    if( !s.startsWith( posPartLabel ) ) {
+      return false;
+    }
+    final int start = s.indexOf("=");
+    if( start == -1 ) {
+      //throw new IllegalArgumentException(format("Illegal context specification: %s", s));
+      System.out.println( format( "Illegal context specification: %s", s ) );
+      return false;
+    }
     return true;
   }
 
@@ -404,9 +434,34 @@ public class OneGrid extends Configured {
         + "<mbr (Rectangle: (xmin,ymin,...)-(xmax,ymax,...) or compute)> " // 2
         + "<cell_side (0.0 if mbr=compute)> " // 3
         + "<moran_index (MI|noMI)> " // 4
-        + "<input_path> " // 5
-        + "<output_path>%n", // 6
+        + "<context (context=n1,n2,...)> " // 5
+        + "<input_path> " // 6
+        + "<output_path>%n", // 7
         wktFormat, csvFormat, csvMultiFormat );
+  }
+
+  /**
+   * MISSING COMMENT
+   *
+   */
+
+  private void processContextParameter( String s ) {
+    final int start = s.indexOf( "=" );
+    s = s.substring( start + 1 );
+    // default value
+    if( s.isEmpty() || s.contains( "-1" ) ) {
+      // todo: parametrize !!!
+      /*posPart = VeronaCardWritable.DEFAULT_PARTITION;//*/
+      posPart = RestaurantWritable.DEFAULT_PARTITION;//*/
+    } else {
+      final StringTokenizer tk = new StringTokenizer( s, "," );
+      int i = 0;
+      while( tk.hasMoreTokens() ) {
+        final String token = tk.nextToken();
+        posPart[i] = Integer.parseInt( token );
+        i++;
+      }
+    }
   }
 
   /**
@@ -417,7 +472,6 @@ public class OneGrid extends Configured {
    * @throws InterruptedException
    * @throws ClassNotFoundException
    */
-
 
   private void processMbrParameter( String cellSide )
     throws IOException, InterruptedException, ClassNotFoundException {
@@ -465,12 +519,14 @@ public class OneGrid extends Configured {
         final OperationConf config = new OperationConf( confMBR );
         config.setFileInputPaths( inputs );
         config.setOutputDirectory( new Path( "tmp/" ) );
+        /*final Pair<ContextData, ContextData> mmbox = runMBBoxMapReduce
+          ( config, VeronaCardCSVInputFormat.class, false );//*/
         final Pair<ContextData, ContextData> mmbox = runMBBoxMapReduce
-          ( config, VeronaCardCSVInputFormat.class, false );
+                ( config, inputFormatClass, false );
 
         final StringBuilder lb = new StringBuilder();
         final StringBuilder rb = new StringBuilder();
-        final String[] fields = mmbox.getLeft().getContextFields();
+        final String[] fields = mmbox.getLeft().getContextFields( posPart );
         for( int i = 0; i < fields.length; i++ ) {
           final String f = fields[i];
           final Double min = (Double) ReflectionUtil.readMethod( f, mmbox.getLeft() );
@@ -548,6 +604,7 @@ public class OneGrid extends Configured {
     // === Properties ==========================================================
 
     private Double[] cellSides = new Double[maxNumDims];
+    private Integer[] posPart = new Integer[maxNumDims];
     private List<Grid> grids = new ArrayList<Grid>( numGrids );
     private List<NGrid> nGrids = new ArrayList<NGrid>( numGrids );
     private List<HashMap<Long, Long>> boxCounts = new ArrayList<HashMap<Long, Long>>( numGrids );
@@ -582,6 +639,9 @@ public class OneGrid extends Configured {
       for( int i = 0; i < numDims; i++ ) {
         cellSides[i] = conf.getDouble( cellSideLabel + i, 0.0 );
       }
+      for( int i = 0; i < numDims; i++ ) {
+        posPart[i] = conf.getInt( posPartLabel + i, -1 );
+      }
 
       System.out.printf( "%s%s start ...%n", mapPhaseLabel, setupMethodLabel );
       System.out.printf( "%s%s cell sides: ", mapPhaseLabel, setupMethodLabel );
@@ -613,13 +673,29 @@ public class OneGrid extends Configured {
     public void map( LongWritable key, Text value, Context context )
       throws IOException, InterruptedException {
 
+      // --- create string containing only context values ---------------------
+
+      final String[] tokens = value.toString().trim().split("," );
+      final StringBuilder lb = new StringBuilder();
+      final StringBuilder rb = new StringBuilder();
+
+      final int init = tokens.length / 2;
+      for( int i = 0; i < numDims; i++ ) {
+        lb.append( tokens[ posPart[i] ] ).append( "," );
+        rb.append( tokens[ init + posPart[i] ] ).append( "," );
+      }
+      rb.deleteCharAt( rb.length() - 1 );
+      final String newValue = lb.toString() + rb.toString();
+
+
       final Geometry shape;
       final NRectangle nrect;
 
       // --- parse the geometry and updates the statistics ---------------------
 
       if( inputType.equalsIgnoreCase( wktFormat ) ) {
-        shape = readWktGeometry( value.toString().trim() );
+        //shape = readWktGeometry( value.toString().trim() );
+        shape = readWktGeometry( newValue );
         nrect = null;
         geomCounter = geomCounter + 1;
         avgArea = ( avgArea * (double) ( geomCounter - 1 ) +
@@ -637,7 +713,8 @@ public class OneGrid extends Configured {
 
       } else {
         shape = null;
-        nrect = new NRectangle( value.toString().trim() );
+        //nrect = new NRectangle( value.toString().trim() );
+        nrect = new NRectangle( newValue );
         if( nrect.isValid ) {
           geomCounter = geomCounter + 1;
           avgArea = ( avgArea * (double) ( geomCounter - 1 )
@@ -676,7 +753,8 @@ public class OneGrid extends Configured {
         if( nrect == null || !nrect.isValid ) {
           System.out.printf( "%s%s CASE WKT: rectangle %s is not valid!%n",
                              mapPhaseLabel, mapMethodLabel,
-                             value.toString() );
+                             //value.toString() );
+                             newValue );
           return;
         }
 
@@ -884,6 +962,7 @@ public class OneGrid extends Configured {
     private boolean computeMoranIndex;
     private int numDims;
     private Double[] cellSides = new Double[maxNumDims];
+    private Integer[] posPart = new Integer[maxNumDims];
 
     // === Methods =============================================================
 

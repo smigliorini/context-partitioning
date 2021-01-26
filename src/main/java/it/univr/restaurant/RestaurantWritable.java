@@ -2,25 +2,22 @@ package it.univr.restaurant;
 
 import it.univr.hadoop.ContextData;
 import it.univr.restaurant.partitioning.DataUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-import static java.lang.String.format;
-
 public class RestaurantWritable
   extends RestaurantRecord
   implements ContextData {
 
   /**
-   * List of partitioner
+   * Default partitioning fields
    */
-  private static final int[] partitioner = { 1,2,7,9 }; // all partition //*/
-  /*private static final int[] partitioner = { 1,2 }; // coordX, coordY //*/
+  // todo: 6 partizioni
+  /*public static final Integer[] DEFAULT_PARTITION = { 1,2,4,7,9,11 }; // coordX, coordY, zipcode, $date, score, restaurantId //*/
+  public static final Integer[] DEFAULT_PARTITION = { 1,2,4,7,9 }; // coordX, coordY, zipcode, $date, score //*/
 
   /**
    * Fields of the input file
@@ -33,14 +30,12 @@ public class RestaurantWritable
           "zipcode",
           "borough",
           "cuisine",
-          "$date",
+          "time",
           "grade",
           "score",
           "name",
           "restaurantId"
   };
-
-  static final Logger LOGGER = LogManager.getLogger( RestaurantWritable.class );
 
   public static String SPLITERATOR = ",";
 
@@ -57,35 +52,42 @@ public class RestaurantWritable
   }
 
   @Override
-  public String[] getContextFields() {
-    //return new String[]{"coordX", "coordY", "$date", "score"};
-    return getContextFields( partitioner );
+  public String[] getContextFields( Integer[] partition ) {
+    // Default value
+    if( partition == null || partition.length < 2 ) {
+      return getAttributes( DEFAULT_PARTITION );
+    }
+    return getAttributes( partition );
   }
 
-  public String[] getContextFields( int[] indexFields ) {
-    List<String> partFields = new ArrayList<>();
+  public String[] getAttributes( Integer[] partition ) {
+    final Set<String> fields = new HashSet<>();
 
-    for( int indexField : indexFields ) {
-      if( indexField >= 0 && indexField < attributes.length  )
-        partFields.add( attributes[indexField] );
-      else
-        LOGGER.warn( format( "Field index %d is not exist.", indexField ) );
+    for( Integer n : partition ) {
+      if( checkAttribute( n ) )
+        fields.add( attributes[n] );
     }
+    return fields.toArray( new String[fields.size()] );
+  }
 
-    if( partFields.size() == 0 ) {
-      // TODO
-      LOGGER.error( format( "Context fields array is empty, choose at least two: %s" ) );
-      System.exit(-1);
+  private boolean checkAttribute( Integer position ) {
+    // invalid attribute
+    if( position == null ) {
+      return false;
     }
-    return partFields.toArray( new String[partFields.size()] );
+    // out of range
+    if( position < 0 || position >= attributes.length ) {
+      return false;
+    }
+    return true;
   }
 
   @Override
   public int compareTo( ContextData o ) {
     RestaurantRecord restaurantRecord = ( RestaurantRecord ) o;
-    if ( this.$date < restaurantRecord.$date )
+    if ( this.time < restaurantRecord.time)
       return -1;
-    if ( this.$date > restaurantRecord.$date )
+    if ( this.time > restaurantRecord.time)
       return 1;
     if ( this.coordX < restaurantRecord.coordX )
       return 1;
@@ -101,22 +103,22 @@ public class RestaurantWritable
   @Override
   public void write( DataOutput out ) throws IOException {
     try {
-      out.writeUTF(building.toString());
-    } catch (NullPointerException e) {
+      out.writeUTF( building.toString() );
+    } catch( NullPointerException e ) {
       // building can be empty string
-      out.writeUTF("null");
+      out.writeUTF( "null" );
     }
-    out.writeDouble(coordX);
-    out.writeDouble(coordY);
-    out.writeUTF(street.toString());
-    out.writeInt(zipcode);
-    out.writeUTF(borough.toString());
-    out.writeUTF(cuisine.toString());
-    out.writeDouble($date);
-    out.writeUTF(grade.toString());
-    out.writeDouble(score);
-    out.writeUTF(name.toString());
-    out.writeInt(restaurantId);
+    out.writeDouble( coordX );
+    out.writeDouble( coordY );
+    out.writeUTF( street.toString() );
+    out.writeDouble( zipcode );
+    out.writeUTF( borough.toString() );
+    out.writeUTF( cuisine.toString() );
+    out.writeDouble( time );
+    out.writeUTF( grade.toString() );
+    out.writeDouble( score );
+    out.writeUTF( name.toString() );
+    out.writeDouble( restaurantId );
   }
 
   @Override
@@ -125,14 +127,14 @@ public class RestaurantWritable
     coordX = in.readDouble();
     coordY = in.readDouble();
     street = in.readUTF();
-    zipcode = in.readInt();
+    zipcode = in.readDouble();
     borough = in.readUTF();
     cuisine = in.readUTF();
-    $date = in.readDouble();
+    time = in.readDouble();
     grade = in.readUTF();
     score = in.readDouble();
     name = in.readUTF();
-    restaurantId = in.readInt();
+    restaurantId = in.readDouble();
   }
 
   @Override
@@ -172,7 +174,7 @@ public class RestaurantWritable
     b.append( separator );
     b.append( cuisine );
     b.append( separator );
-    b.append( $date );
+    b.append( time );
     b.append( separator );
     b.append( grade );
     b.append( separator );

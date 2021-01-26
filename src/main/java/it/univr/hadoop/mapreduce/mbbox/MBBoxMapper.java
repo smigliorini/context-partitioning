@@ -28,24 +28,26 @@ public class MBBoxMapper extends Mapper<LongWritable, ContextData, Text, ObjectW
     }
 
     @Override
-    protected void map(LongWritable key, ContextData value, Context context) throws IOException, InterruptedException {
-        for (String fieldName : value.getContextFields()) {
+    protected void map( LongWritable key, ContextData value, Context context ) throws IOException, InterruptedException {
+        // TODO: always default value
+        Integer[] partition = OperationConf.getPartitionFields( context.getConfiguration() );
+        for( String fieldName : value.getContextFields( partition ) ) {
             try {
-                Object propertyValue = new PropertyDescriptor(fieldName, value.getClass()).getReadMethod()
-                        .invoke(value);
-                if(propertyValue == null) {
-                    LOGGER.error(format("Field name %s does not exist for record: %s",
-                            fieldName, value.toString()));
+                Object propertyValue = new PropertyDescriptor( fieldName, value.getClass() ).getReadMethod()
+                        .invoke( value );
+                if( propertyValue == null ) {
+                    LOGGER.error( format( "Field name %s does not exist for record: %s",
+                            fieldName, value.toString() ) );
                 } else {
                     WritableComparable mapValue;
-                    if(propertyValue instanceof WritableComparable) {
+                    if( propertyValue instanceof WritableComparable ) {
                         mapValue = (WritableComparable) propertyValue;
                     } else {
-                        mapValue = WritablePrimitiveMapper.getPrimitiveWritable(propertyValue);
+                        mapValue = WritablePrimitiveMapper.getPrimitiveWritable( propertyValue );
                     }
-                    context.write(new Text(fieldName), new ObjectWritable(mapValue));
+                    context.write( new Text( fieldName ), new ObjectWritable( mapValue ) );
                 }
-            } catch (IllegalAccessException | IntrospectionException | InvocationTargetException e) {
+            } catch( IllegalAccessException | IntrospectionException | InvocationTargetException e ) {
                 e.printStackTrace();
             }
         }

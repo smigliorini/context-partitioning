@@ -10,9 +10,8 @@ import it.univr.hadoop.mapreduce.multilevel.MultiLevelGridMapper;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelGridReducer;
 import it.univr.hadoop.mapreduce.multilevel.MultiLevelMiddleMapper;
 import it.univr.hadoop.output.ContextBasedTextOutputFormat;
-import it.univr.hadoop.util.ContextBasedUtil;
-import it.univr.restaurant.hadoop.mapreduce.boxcount.BoxCountingMapper;
-import it.univr.restaurant.hadoop.mapreduce.multilevel.MultiLevelMiddleReducer;
+import it.univr.hadoop.mapreduce.boxcount.BoxCountingMapper;
+import it.univr.hadoop.mapreduce.multilevel.MultiLevelMiddleReducer;
 import it.univr.util.Pair;
 import it.univr.util.ReflectionUtil;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,7 +25,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.LogManager;
@@ -95,11 +93,15 @@ public class ContextBasedPartitioner {
       LOGGER.error( "Invalid input files" );
       System.exit( 1 );
     }
+    if( !config.validPartitionFields() ) {
+      LOGGER.error( "Invalid context fields" );
+      System.exit( 1 );
+    }
     // Retrieve Minimum Bounding Box Map-Reduce result
     final Pair<ContextData, ContextData> mmbox = runMBBoxMapReduce
       ( config, inputFormatClass, false );
 
-    final int numDims = mmbox.getLeft().getContextFields().length;
+    final int numDims = mmbox.getLeft().getContextFields( config.partition ).length;
 
     if( mmbox != null ) {
       Job job = getJob( mmbox.getLeft(), mmbox.getRight(), config );
@@ -115,6 +117,7 @@ public class ContextBasedPartitioner {
             config.getFileInputPaths().get( 0 ).toUri().getRawPath(),
             config.getGridPath().toUri().getRawPath(),
             numDims,
+            config.contextFields,
             config.cellSide );
       }
 
@@ -146,11 +149,12 @@ public class ContextBasedPartitioner {
     OperationConf config ) throws IOException {
 
     // TODO Passing a json string as parameter configuration could be another way to access to needed information from Reducer and Mappers.
-    final String[] contextFields = minContextDataValue.getContextFields();
+    final String[] fields = minContextDataValue.getContextFields( config.partition );
     // input setup
-    OperationConf.setContextSetDim( config, contextFields.length );
+    OperationConf.setContextSetDim( config, fields.length );
+    OperationConf.setPartitionFields( config, config.partition );
     // width calculation
-    Stream.of( contextFields ).forEach( property -> {
+    Stream.of( fields ).forEach( property -> {
       Comparable<?> maxValue = (Comparable<?>) ReflectionUtil.readMethod( property, maxContextDataValue );
       Comparable<?> minValue = (Comparable<?>) ReflectionUtil.readMethod( property, minContextDataValue );
       final Double max = Double.valueOf( maxValue.toString() );
@@ -161,7 +165,7 @@ public class ContextBasedPartitioner {
     } );
 
     if( config.technique.equals( PartitionTechnique.ML_GRID ) ) {
-      OperationConf.setMultiLevelMapperProperty( contextFields[0], config );
+      OperationConf.setMultiLevelMapperProperty( fields[0], config );
       OperationConf.setMultiLevelOutputPath( config.getOutputPath().toUri().getPath(), config );
     }
     OperationConf.setMasterFileEnabled( config, true );
@@ -223,14 +227,14 @@ public class ContextBasedPartitioner {
     int i = 0;
     Path directoryOutputPath = config.getOutputPath();
 
-    for( String propertyName : contextData.getContextFields() ) {
+    for( String propertyName : contextData.getContextFields( config.partition ) ) {
       job.setMapOutputKeyClass( Text.class );
       job.setMapOutputValueClass( mapOutputValueClass );
       if( i == 0 )
         job.setMapperClass( MultiLevelGridMapper.class );
       else
         job.setMapperClass( MultiLevelMiddleMapper.class );
-      if( i == contextData.getContextFields().length - 1 ) {
+      if( i == contextData.getContextFields( config.partition ).length - 1 ) {
         job.setReducerClass( MultiLevelGridReducer.class );
         LazyOutputFormat.setOutputFormatClass( job, ContextBasedTextOutputFormat.class );
       } else {
@@ -245,8 +249,8 @@ public class ContextBasedPartitioner {
         break;
       i++;
       //Prepare new job for the next partition level
-      if( i < contextData.getContextFields().length ) {
-        OperationConf.setMultiLevelMapperProperty( contextData.getContextFields()[i], config );
+      if( i < contextData.getContextFields( config.partition ).length ) {
+        OperationConf.setMultiLevelMapperProperty( contextData.getContextFields( config.partition )[i], config );
         FileSystem fileSystem = FileSystem.get( config );
         LOGGER.warn( "Next property is: " + OperationConf.getMultiLevelMapperProperty( config ) );
         job = Job.getInstance( config, "CBMR" );
@@ -305,6 +309,7 @@ public class ContextBasedPartitioner {
     String inputPath,
     String gridPath,
     Integer numDims,
+    String contextFields,
     Double cellSide )
     throws Exception {
 
@@ -314,11 +319,12 @@ public class ContextBasedPartitioner {
       OneGrid.computeMbrPar,
       cellSide.toString(),
       "noMI",
+      contextFields,
       inputPath,
       gridPath,
     };
 
-    final OneGrid oneGrid = new OneGrid( args );
+    final OneGrid oneGrid = new OneGrid( args, inputFormatClass );
     final int res = OneGrid.run( oneGrid );
 
     final FileSystem fileSystem = FileSystem.get( job.getConfiguration() );

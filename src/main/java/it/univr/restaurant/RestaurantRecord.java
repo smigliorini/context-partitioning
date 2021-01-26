@@ -10,18 +10,18 @@ public class  RestaurantRecord {
   protected Double coordX;
   protected Double coordY;
   protected String street;
-  //protected Double zipcode;
-  protected Integer zipcode;
+  //protected Integer zipcode;
+  protected Double zipcode;
   protected String borough;
   protected String cuisine;
-  //protected Long $date;
-  protected Double $date;
+  //protected Long time;
+  protected Double time;
   protected String grade;
   //protected Integer score;
   protected Double score;
   protected String name;
-  //protected Double restaurantId;
-  protected Integer restaurantId;
+  //protected Integer restaurantId;
+  protected Double restaurantId;
 
   public RestaurantRecord() {
     building = null;
@@ -31,15 +31,18 @@ public class  RestaurantRecord {
     zipcode = null;
     borough = null;
     cuisine = null;
-    $date = null;
+    time = null;
     grade = null;
     score = null;
     name = null;
     restaurantId = null;
   }
 
-  public RestaurantRecord(String building, Double coordX, Double coordY, String street, Integer zipcode, String borough,
-                          String cuisine, Double $date, String grade, Double score, String name, Integer restaurantId) {
+  public RestaurantRecord
+  ( String building, Double coordX, Double coordY, String street,
+    Double zipcode, String borough, String cuisine, Double time,
+    String grade, Double score, String name, Double restaurantId ) {
+
     this.building = building;
     this.coordX = coordX;
     this.coordY = coordY;
@@ -47,7 +50,7 @@ public class  RestaurantRecord {
     this.zipcode = zipcode;
     this.borough = borough;
     this.cuisine = cuisine;
-    this.$date = $date;
+    this.time = time;
     this.grade = grade;
     this.score = score;
     this.name = name;
@@ -62,7 +65,7 @@ public class  RestaurantRecord {
             restaurantRecord.getZipcode(),
             restaurantRecord.getBorough(),
             restaurantRecord.getCuisine(),
-            restaurantRecord.get$date(),
+            restaurantRecord.getTime(),
             restaurantRecord.getGrade(),
             restaurantRecord.getScore(),
             restaurantRecord.getName(),
@@ -73,62 +76,60 @@ public class  RestaurantRecord {
   public String getBuilding() {
     return building;
   }
-  public void setBuilding(String building) { this.building = building; }
+  public void setBuilding( String building ) { this.building = building; }
 
   public Double getCoordX() { return coordX; }
-  public void setCoordX(Double coordX) { this.coordX = coordX; }
+  public void setCoordX( Double coordX ) { this.coordX = coordX; }
 
   public Double getCoordY() { return coordY; }
-  public void setCoordY(Double coordY) { this.coordY = coordY; }
+  public void setCoordY( Double coordY ) { this.coordY = coordY; }
 
   public String getStreet() {
     return street;
   }
-  public void setStreet(String street) { this.street = street; }
+  public void setStreet( String street ) { this.street = street; }
 
-  public Integer getZipcode() {
+  public Double getZipcode() {
     return zipcode;
   }
-  public void setZipcode(Integer zipcode) {
-    this.zipcode = zipcode;
-  }
+  public void setZipcode( Double zipcode ) { this.zipcode = zipcode; }
 
   public String getBorough() {
     return borough;
   }
-  public void setBorough(String borough) {
+  public void setBorough( String borough ) {
     this.borough = borough;
   }
 
   public String getCuisine() {
     return cuisine;
   }
-  public void setCuisine(String cuisine) {
+  public void setCuisine( String cuisine ) {
     this.cuisine = cuisine;
   }
 
-  public Double get$date() {
-    return $date;
+  public Double getTime() {
+    return time;
   }
-  public void set$date(Double $date) {
-    this.$date = $date;
+  public void setTime( Double time ) {
+    this.time = time;
   }
 
   public String getGrade() {
     return grade;
   }
-  public void setGrade(String grade) {
+  public void setGrade( String grade ) {
     this.grade = grade;
   }
 
   public Double getScore() { return score; }
-  public void setScore(Double score) { this.score = score; }
+  public void setScore( Double score ) { this.score = score; }
 
   public String getName() { return name; }
-  public void setName(String name) { this.name = name; }
+  public void setName( String name ) { this.name = name; }
 
-  public Integer getRestaurantId() { return restaurantId; }
-  public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
+  public Double getRestaurantId() { return restaurantId; }
+  public void setRestaurantId( Double restaurantId ) { this.restaurantId = restaurantId; }
 
   public String toString( String separator ){
     final StringBuilder sb = new StringBuilder();
@@ -146,7 +147,7 @@ public class  RestaurantRecord {
     sb.append( separator );
     sb.append( cuisine );
     sb.append( separator );
-    sb.append( $date );
+    sb.append( time );
     sb.append( separator );
     sb.append( grade );
     sb.append( separator );
@@ -172,7 +173,7 @@ public class  RestaurantRecord {
     sb.append( separator );
     sb.append( cuisine );
     sb.append( separator );
-    sb.append( $date );
+    sb.append(time);
     sb.append( separator );
     sb.append( grade );
     sb.append( separator );
@@ -186,21 +187,21 @@ public class  RestaurantRecord {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof RestaurantRecord)) return false;
+  public boolean equals( Object o ) {
+    if( this == o ) return true;
+    if( !( o instanceof RestaurantRecord ) ) return false;
     RestaurantRecord that = (RestaurantRecord) o;
-    return Objects.equals(coordX, that.coordX) &&
-            Objects.equals(coordY, that.coordY) &&
-            Objects.equals($date, that.$date) &&
-            Objects.equals(grade, that.grade) &&
-            Objects.equals(score, that.score) &&
-            Objects.equals(restaurantId, that.restaurantId);
+    return Objects.equals( coordX, that.coordX ) &&
+            Objects.equals( coordY, that.coordY ) &&
+            Objects.equals( time, that.time ) &&
+            Objects.equals( grade, that.grade ) &&
+            Objects.equals( score, that.score ) &&
+            Objects.equals( restaurantId, that.restaurantId );
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(coordX, coordY, $date, grade, score);
+    return Objects.hash( coordX, coordY, time, zipcode, score );
   }
 
   @Override

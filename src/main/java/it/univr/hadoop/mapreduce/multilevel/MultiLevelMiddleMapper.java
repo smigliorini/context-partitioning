@@ -4,7 +4,6 @@ import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
 import it.univr.hadoop.mapreduce.MultiBaseMapper;
 import it.univr.hadoop.writable.TextPairWritable;
-import it.univr.restaurant.hadoop.mapreduce.multilevel.MultiLevelMiddleReducer;
 import it.univr.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -28,7 +27,7 @@ import static java.lang.String.format;
 
 public class MultiLevelMiddleMapper extends MultiBaseMapper<Text, Text, Text, ContextData> {
 
-    private static final Logger LOGGER = LogManager.getLogger(MultiLevelMiddleMapper.class);
+    private static final Logger LOGGER = LogManager.getLogger( MultiLevelMiddleMapper.class );
     protected String currentPropertyName;
     protected String previousProperty;
     protected Class parserClass;
@@ -39,41 +38,41 @@ public class MultiLevelMiddleMapper extends MultiBaseMapper<Text, Text, Text, Co
     protected Text keyInputMap;
 
     @Override
-    protected void setup(Context context) throws IOException, InterruptedException {
-        super.setup(context);
-        this.currentPropertyName = OperationConf.getMultiLevelMapperProperty(context.getConfiguration());
+    protected void setup( Context context ) throws IOException, InterruptedException {
+        super.setup( context );
+        this.currentPropertyName = OperationConf.getMultiLevelMapperProperty( context.getConfiguration() );
         hashMap = new HashMap<>();
 
-        String parserClassName = OperationConf.getMultiLevelParserClass(context.getConfiguration());
-        parserMethodName = OperationConf.getMultiLevelParserMethodName(context.getConfiguration());
+        String parserClassName = OperationConf.getMultiLevelParserClass( context.getConfiguration() );
+        parserMethodName = OperationConf.getMultiLevelParserMethodName( context.getConfiguration() );
         try {
-            parserClass = Class.forName(parserClassName);
-        } catch (ClassNotFoundException e) {
+            parserClass = Class.forName( parserClassName );
+        } catch( ClassNotFoundException e ) {
             e.printStackTrace();
-            LOGGER.error("Class not found");
+            LOGGER.error( "Class not found" );
         }
     }
 
     @Override
-    protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+    protected void map( Text key, Text value, Context context ) throws IOException, InterruptedException {
         this.keyInputMap = key;
         try {
             Object instance = parserClass.getConstructor().newInstance();
-            Method method = parserClass.getMethod(parserMethodName, String.class);
-            ContextData contextData = (ContextData) method.invoke(instance, value.toString());
+            Method method = parserClass.getMethod( parserMethodName, String.class );
+            ContextData contextData = (ContextData) method.invoke( instance, value.toString() );
             if(previousProperty == null) {
-                List<String> fields = Arrays.asList(contextData.getContextFields());
-                int index = fields.indexOf(currentPropertyName);
-                previousProperty = fields.get(index-1);
+                List<String> fields = Arrays.asList( contextData.getContextFields( partition ) );
+                int index = fields.indexOf( currentPropertyName );
+                previousProperty = fields.get( index-1 );
             };
-            long keyValue = propertyOperationPartition(currentPropertyName, contextData, context.getConfiguration());
-            StringBuilder keyBuilder = new StringBuilder(key.toString());
-            keyBuilder.append("-");
-            keyBuilder.append(format(keyFormat, keyValue));
-            context.write(new Text(keyBuilder.toString()), contextData);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            long keyValue = propertyOperationPartition( currentPropertyName, contextData, context.getConfiguration() );
+            StringBuilder keyBuilder = new StringBuilder( key.toString() );
+            keyBuilder.append( "-" );
+            keyBuilder.append( format( keyFormat, keyValue ) );
+            context.write( new Text(keyBuilder.toString() ), contextData );
+        } catch( NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e ) {
             e.printStackTrace();
-            LOGGER.error(e.getMessage());
+            LOGGER.error( e.getMessage() );
         }
 
     }

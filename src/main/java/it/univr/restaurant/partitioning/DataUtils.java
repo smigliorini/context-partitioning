@@ -1,13 +1,9 @@
 package it.univr.restaurant.partitioning;
 
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 import it.univr.restaurant.RestaurantRecord;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -346,42 +342,6 @@ public class DataUtils {
     int i = 0;
     final String[] tokens = line.split( separator );
     for( String token : tokens ) {
-      /*
-      switch ( i ) {
-        case 0: // coordX
-          try {
-            r.setCoordX( parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
-            r.setCoordX( null );
-          }
-          i++;
-          break;
-        case 1: // coordY
-          try {
-            r.setCoordY( parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
-            r.setCoordY( null );
-          }
-          i++;
-          break;
-        case 2: // $date
-          try {
-            r.set$date( Double.parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
-            r.set$date( null );
-          }
-          i++;
-          break;
-        case 3: // score
-          try {
-            r.setScore( Double.parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
-            r.setScore( null );
-          }
-          i++;
-          break;
-      }//*/
-
       switch ( i ) {
         case 0: // building
           if( !token.isEmpty() ) {
@@ -394,7 +354,7 @@ public class DataUtils {
         case 1: // coordX
           try {
             r.setCoordX( parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
+          } catch( NumberFormatException e ) {
             r.setCoordX( null );
           }
           i++;
@@ -402,7 +362,7 @@ public class DataUtils {
         case 2: // coordY
           try {
             r.setCoordY( parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
+          } catch( NumberFormatException e ) {
             r.setCoordY( null );
           }
           i++;
@@ -417,8 +377,9 @@ public class DataUtils {
           break;
         case 4: // zipcode
           try {
-            r.setZipcode( Integer.parseInt( token ) );
-          } catch ( NumberFormatException e ) {
+            //r.setZipcode( Integer.parseInt( token ) );
+            r.setZipcode( Double.parseDouble( token ) );
+          } catch( NumberFormatException e ) {
             r.setZipcode( null );
           }
           i++;
@@ -441,9 +402,9 @@ public class DataUtils {
           break;
         case 7: // $date
           try {
-            r.set$date( Double.parseDouble( token ) );
+            r.setTime( Double.parseDouble( token ) );
           } catch ( NumberFormatException e ) {
-            r.set$date( null );
+            r.setTime( null );
           }
           i++;
           break;
@@ -458,7 +419,7 @@ public class DataUtils {
         case 9: // score
           try {
             r.setScore( Double.parseDouble( token ) );
-          } catch ( NumberFormatException e ) {
+          } catch( NumberFormatException e ) {
             r.setScore( null );
           }
           i++;
@@ -473,14 +434,16 @@ public class DataUtils {
           break;
         case 11: // restaurantId
           try {
-            r.setRestaurantId( Integer.parseInt( token ) );
-          } catch ( NumberFormatException e ) {
+            //r.setRestaurantId( Integer.parseInt( token ) );
+            r.setRestaurantId( Double.parseDouble( token ) );
+          } catch( NumberFormatException e ) {
             r.setRestaurantId( null );
           }
           i++;
           break;
-      }//*/
+      }
     }
+
     return r;
   }
 }

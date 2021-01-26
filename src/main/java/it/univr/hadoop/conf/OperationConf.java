@@ -12,6 +12,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,6 +34,7 @@ public class OperationConf extends Configuration {
   public static final String MULTI_LEVEL_PARSER_CLASS = "multi-level-parse-class";
   public static final String MULTI_LEVEL_OUTPUT_PATH = "multi-level-outputpath";
   public static final String MASTER_FILE_ENABLED = "master-file-enabled";
+  public static final String PARTITION_FIELDS = "context";
 
   public Optional<HContexBasedConf> hContextBasedConf;
   public Vector<Path> fileInputPaths;
@@ -40,6 +42,8 @@ public class OperationConf extends Configuration {
   public Path gridPath;
   public PartitionTechnique technique;
   public Double cellSide;
+  public String contextFields;
+  public Integer[] partition;
 
 
   /**
@@ -75,6 +79,25 @@ public class OperationConf extends Configuration {
 
   public static Long getContextSetDim( Configuration conf ) {
     return Long.parseLong( conf.get( CONTEXT_SET_DIM, "1" ) );
+  }
+
+  public static void setPartitionFields( Configuration conf, Integer[] value ) {
+    if( value != null && value.length > 1 ) {
+      for( int i = 0; i < value.length; i++ )
+        conf.setInt( PARTITION_FIELDS + i, value[i] );
+    }
+  }
+
+  public static Integer[] getPartitionFields( Configuration conf ) {
+    Long contextSetDim = OperationConf.getContextSetDim( conf );
+    Integer[] partition = new Integer[Math.toIntExact(contextSetDim)];
+    for( int i = 0; i < contextSetDim; i++ ) {
+      partition[i] = conf.getInt( PARTITION_FIELDS + i, -1 );
+      if( partition[i] == -1 ) {
+        return null;
+      }
+    }
+    return partition;
   }
 
   public static void setMinProperty( Configuration conf, String propertyName, Double min ) {
@@ -177,11 +200,13 @@ public class OperationConf extends Configuration {
       final int start, end;
       if( technique.equals( BOX_COUNT ) ) {
         cellSide = new Double( args[1] );
-        gridPath = new Path( args[2] );
-        start = 3;
+        contextFields = args[2];
+        gridPath = new Path( args[3] );
+        start = 4;
       } else if( technique.equals( MD_GRID ) ||
                  technique.equals( ML_GRID ) ) {
-        start = 1;
+        contextFields = args[1];
+        start = 2;
       } else { // impossible
         start = -1;
       }
@@ -267,9 +292,44 @@ public class OperationConf extends Configuration {
     return true;
   }
 
+  /**
+   * MISSING COMMENT
+   */
+  public boolean validPartitionFields() {
+    if( !contextFields.startsWith(PARTITION_FIELDS) ) {
+      return false;
+    }
+    final int start = contextFields.indexOf("=");
+    if( start == -1 ) {
+      throw new IllegalArgumentException(format("Illegal context specification: %s", contextFields));
+    }
+    processPartitionFields( contextFields.substring( start + 1 ) );
+    return true;
+  }
+
+  private void processPartitionFields( String s ) {
+    // default value
+    if( s.isEmpty() || s.contains("-1") ) {
+      partition = null;
+    } else {
+      final StringTokenizer tk = new StringTokenizer( s, "," );
+      int i = 0;
+      this.partition = new Integer[ tk.countTokens() ];
+      while( tk.hasMoreTokens() ) {
+        final String token = tk.nextToken();
+        partition[i] = Integer.parseInt( token );
+        i++;
+      }
+    }
+  }
+
   public Optional<HContexBasedConf> getHContextBasedConf() {
     return hContextBasedConf;
   }
+
+  public String getPartitionParameter() { return contextFields; }
+
+  public Integer[] getContextPartition() { return partition; }
 
   public Vector<Path> getFileInputPaths() {
     return fileInputPaths;
