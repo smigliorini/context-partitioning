@@ -3,6 +3,7 @@ package it.univr.operations;
 import it.univr.descriptors.NRectangle;
 import it.univr.descriptors.OneGrid;
 import it.univr.hadoop.ContextData;
+import it.univr.restaurant.RestaurantCSVInputFormat;
 import it.univr.veronacard.VeronaCardCSVInputFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +16,12 @@ import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
+import static java.lang.String.format;
 import static org.apache.hadoop.mapreduce.JobCounter.*;
 import static org.apache.hadoop.mapreduce.lib.input.FileInputFormat.setInputPaths;
 import static org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.setOutputPath;
@@ -38,11 +42,14 @@ public class RangeQuery extends Configured {
   public static final String numDimsLabel = "numDims";
   static final Log LOG = LogFactory.getLog( RangeQuery.class );
   private static final int numArgs = 5;
+  private static final int maxNumDims = 10;
   private static Counters counters;
   private Integer numDims;
   private Path inputPath;
   private Path outputPath;
   private String rangeQuery;
+  Class<? extends FileInputFormat> inputFormatClass;
+
 
   // === Methods ===============================================================
 
@@ -52,10 +59,14 @@ public class RangeQuery extends Configured {
    * @param args
    */
 
-  public RangeQuery( String[] args ) {
+  public RangeQuery
+  ( String[] args, Class<? extends FileInputFormat> inputFormatClass ) {
+
     if( !checkArguments( args ) ) {
       System.exit( 1 );
     }
+
+    this.inputFormatClass = inputFormatClass;
     //System.out.printf( "Constructor!!%n" );
   }
 
@@ -71,7 +82,9 @@ public class RangeQuery extends Configured {
     final long start = System.currentTimeMillis();
     System.out.printf( "START: %d%n", start );
 
-    final int res = run( new RangeQuery( args ) );
+    /*final int res = run( new RangeQuery( args, VeronaCardCSVInputFormat.class ) );//*/
+    final int res = run( new RangeQuery( args, RestaurantCSVInputFormat.class ) );//*/
+
     // Counters counters = firstJob.getCounters();
     // Counter outputRecordCounter = counters.findCounter(Task.Counter.MAP_OUTPUT_RECORDS);
 
@@ -103,7 +116,7 @@ public class RangeQuery extends Configured {
     job.setJarByClass( OneGrid.class );
 
     // set job input format
-    job.setInputFormatClass( VeronaCardCSVInputFormat.class );
+    job.setInputFormatClass( q.inputFormatClass );
 
     // set map class and the map output key and value classes
     // TO BE SPECIFIED ONLY IF THERE IS A REDUCER!!!
@@ -146,6 +159,7 @@ public class RangeQuery extends Configured {
    */
 
   private boolean checkArguments( String[] args ) {
+
     if( args.length != numArgs ) {
       printUsage();
       return false;
@@ -164,7 +178,9 @@ public class RangeQuery extends Configured {
     rqString = rqString.replace( "Rectangle:", "" );
     rqString = rqString.replace( "(", "" );
     rqString = rqString.replace( ")", "" );
-    rqString = rqString.replace( "-", "," );
+    //rqString = rqString.replace( "-", "," );
+    rqString = rqString.replace(',', '.');
+    rqString = rqString.replace( "_", ",");
 
     rangeQuery = rqString;
     inputPath = new Path( args[3] );
@@ -182,7 +198,7 @@ public class RangeQuery extends Configured {
       ( "Usage: RangeQuery "
         + "%s " // 0
         + "<dim> " // 1
-        + "<rq (Rectangle: (xmin,ymin,...)-(xmax,ymax,...))> " // 2
+        + "<rq (Rectangle: (xmin_ymin_...)_(xmax_ymax_...))> " // 2
         + "<input_path> " // 3
         + "<output_path>%n", // 4
         csvMultiFormat );

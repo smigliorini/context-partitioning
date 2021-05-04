@@ -1,17 +1,22 @@
-package it.univr.partitioning;
+package it.univr.veronacard.partitioning;
+
+import it.univr.veronacard.VeronaCardRecord;
 
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import it.univr.veronacard.VeronaCardRecord;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static it.univr.partitioning.FileUtils.readLines;
 import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
+import static java.lang.String.format;
 
 /**
  * MISSING_COMMENT
@@ -20,16 +25,16 @@ import static java.lang.Long.parseLong;
  * @version 0.0.0
  */
 public class DataUtils {
-
+  
   private static final int globalMinAge = 10;
   private static final int globalMaxAge = 90;
-
+  
   private DataUtils() {
     // nothing here
   }
-
+  
   // === Methods ===============================================================
-
+  
   /**
    * MISSING_COMMENT
    *
@@ -38,14 +43,14 @@ public class DataUtils {
    * @param outFileName
    * @param separator
    */
-
+  
   public static void buildFractalInput
   ( List<String> lines,
     String outDir,
     String outFileName,
     String separator )
-    throws FileNotFoundException {
-
+      throws FileNotFoundException {
+    
     if( lines == null ) {
       throw new NullPointerException();
     }
@@ -55,57 +60,57 @@ public class DataUtils {
     if( outFileName == null ) {
       throw new NullPointerException();
     }
-
+    
     final String filepath = outDir + outFileName;
     final PrintWriter outWriter = new PrintWriter( filepath );
-
+    
     for( String l : lines ) {
       final StringTokenizer tk = new StringTokenizer( l, separator );
       int i = 0;
       String x = null, y = null, t = null, age = null;
-
+      
       while( tk.hasMoreTokens() ) {
         final String token = tk.nextToken();
-
+        
         if( i == 0 ) { // vc serial
           i++;
-
+          
         } else if( i == 1 ) { // x
           x = token;
           i++;
-
+          
         } else if( i == 2 ) { // y
           y = token;
           i++;
-
+          
         } else if( i == 3 ) { // time
           t = token;
           i++;
-
+          
         } else if( i == 4 ) { // poi name
           i++;
-
+          
         } else if( i == 5 ) {
           age = token;
           i++;
         }
       }
       outWriter.write( String.format( "%s%s%s%s%s%s%s%s" +
-                                      "%s%s%s%s%s%s%s%n",
-                                      x, separator,
-                                      y, separator,
-                                      t, separator,
-                                      age, separator,
-                                      x, separator,
-                                      y, separator,
-                                      t, separator,
-                                      age, separator ) );
+              "%s%s%s%s%s%s%s%n",
+          x, separator,
+          y, separator,
+          t, separator,
+          age, separator,
+          x, separator,
+          y, separator,
+          t, separator,
+          age, separator ) );
     }
-
+    
     outWriter.close();
   }
-
-
+  
+  
   /**
    * MISSING_COMMENT
    *
@@ -113,14 +118,14 @@ public class DataUtils {
    * @param outDir
    * @param outFileName
    */
-
+  
   public static void transformLines
   ( List<String> lines,
     String outDir,
     String outFileName,
     String separator )
-    throws FileNotFoundException {
-
+      throws FileNotFoundException {
+    
     if( lines == null ) {
       throw new NullPointerException();
     }
@@ -130,27 +135,27 @@ public class DataUtils {
     if( outFileName == null ) {
       throw new NullPointerException();
     }
-
+    
     final String filepath = outDir + outFileName;
     final PrintWriter outWriter = new PrintWriter( filepath );
-
+    
     final WKTReader reader = new WKTReader();
     final SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd HH:mm" );
-
+    
     for( String l : lines ) {
       final StringTokenizer tk = new StringTokenizer( l, separator );
       final StringBuilder b = new StringBuilder();
       String poiName = null;
-
+      
       int i = 0;
       while( tk.hasMoreTokens() ) {
         final String token = tk.nextToken();
-
+        
         if( i == 0 ) {
           b.append( token );
           b.append( separator );
           i++;
-
+          
         } else if( i == 1 ) {
           try {
             final Point p = (Point) reader.read( token );
@@ -158,26 +163,26 @@ public class DataUtils {
             b.append( separator );
             b.append( p.getY() );
             b.append( separator );
-
+            
           } catch( ParseException e ) {
             // append two empty coordinates
             b.append( separator );
             b.append( separator );
           }
           i++;
-
+          
         } else if( i == 2 ) {
           try {
             final Date d = df.parse( token );
             b.append( d.getTime() );
             b.append( separator );
-
+            
           } catch( java.text.ParseException e ) {
             // append an empty timestamp
             b.append( separator );
           }
           i++;
-
+          
         } else if( i == 3 ) {
           poiName = token;
           b.append( poiName );
@@ -190,14 +195,14 @@ public class DataUtils {
       } else {
         b.append( "" );
       }
-
+      
       b.append( String.format( "\n" ) );
       outWriter.write( b.toString() );
     }
     outWriter.close();
   }
-
-
+  
+  
   /**
    * MISSING_COMMENT
    *
@@ -205,51 +210,51 @@ public class DataUtils {
    * @param separator
    * @return
    */
-
-  public static Boundaries computeBoundaries ( List<String> lines, String separator ) {
-
+  
+  public static VeronaCardBoundaries computeBoundaries( List<String> lines, String separator ) {
+    
     if( lines == null ) {
       throw new NullPointerException();
     }
-
-    final Boundaries b = new Boundaries();
-
+    
+    final VeronaCardBoundaries b = new VeronaCardBoundaries();
+    
     for( String l : lines ) {
       final StringTokenizer tk = new StringTokenizer( l, separator );
       int i = 0;
-
+      
       while( tk.hasMoreTokens() ) {
         final String token = tk.nextToken();
-
+        
         if( i == 0 ) {
           // vcSerial
           i++;
-
+          
         } else if( i == 1 ) {
           // x
           final double x = parseDouble( token );
           b.updateMinX( x );
           b.updateMaxX( x );
           i++;
-
+          
         } else if( i == 2 ) {
           // y
           final double y = parseDouble( token );
           b.updateMinY( y );
           b.updateMaxY( y );
           i++;
-
+          
         } else if( i == 3 ) {
           // time
           final long time = parseLong( token );
           b.updateMinT( time );
           b.updateMaxT( time );
           i++;
-
+          
         } else if( i == 4 ) {
           // poi name
           i++;
-
+          
         } else if( i == 5 ) {
           // age
           final int age = Integer.parseInt( token );
@@ -260,19 +265,89 @@ public class DataUtils {
     }
     return b;
   }
-
+  
+  /**
+   * MISSING_COMMENT
+   *
+   * @param directory
+   * @param sepearator
+   * @return
+   */
+  
+  public static VeronaCardBoundaries computeGlobalBoundaries( File directory, String sepearator ) {
+    if( directory == null ) {
+      throw new NullPointerException();
+    }
+    if( sepearator == null ) {
+      throw new NullPointerException();
+    }
+    
+    
+    if( !directory.isDirectory() ) {
+      throw new IllegalArgumentException( format( "\"%s\" is not a directory", directory ) );
+    }
+    
+    final VeronaCardBoundaries boundaries = new VeronaCardBoundaries();
+    
+    for( File f : directory.listFiles() ) {
+      final List<String> lines = readLines( f, false );
+      for( String l : lines ) {
+        final StringTokenizer tk = new StringTokenizer( l, sepearator );
+        int i = 0;
+        
+        while( tk.hasMoreTokens() ) {
+          switch( i ) {
+            case 0: // vc serial
+              tk.nextToken();
+              i++;
+              break;
+            case 1:
+              final Double x = parseDouble( tk.nextToken() );
+              boundaries.updateMinX( x );
+              boundaries.updateMaxX( x );
+              i++;
+              break;
+            case 2:
+              final Double y = parseDouble( tk.nextToken() );
+              boundaries.updateMinY( y );
+              boundaries.updateMaxY( y );
+              i++;
+              break;
+            case 3:
+              final Long t = parseLong( tk.nextToken() );
+              boundaries.updateMinT( t );
+              boundaries.updateMaxT( t );
+              i++;
+              break;
+            case 4: // poi name
+              tk.nextToken();
+              i++;
+              break;
+            case 5:
+              final Integer a = parseInt( tk.nextToken() );
+              boundaries.updateMinAge( a );
+              boundaries.updateMaxAge( a );
+              i++;
+              break;
+          }
+        }
+      }
+    }
+    return boundaries;
+  }
+  
   /**
    * MISSING_COMMENT
    *
    * @param poiName
    * @return
    */
-
+  
   private static int generateAge( String poiName ) {
     if( poiName == null ) {
       throw new NullPointerException();
     }
-
+    
     switch( poiName ) {
       case "Casa Giulietta":
       case "Arena":
@@ -296,8 +371,8 @@ public class DataUtils {
       case "Museo Lapidario":
       case "Museo Africano":
       case "Centro Fotografia":
-        case "Duomo":
-          return nextAge( 50, 70 );
+      case "Duomo":
+        return nextAge( 50, 70 );
 
       /*case "Casa Giulietta":
         return nextAge( 14, 20 ); // 14, 40
@@ -343,14 +418,14 @@ public class DataUtils {
         return nextAge( 65, 70 ); // 50, 70
       case "Duomo":
         return nextAge( 60, 70 ); // 15, 70//*/
-
+      
       default:
         final Random r = new Random();
         return r.nextInt( 60 ) + 10;
     }
   }
-
-
+  
+  
   /**
    * MISSING_COMMENT
    *
@@ -358,22 +433,22 @@ public class DataUtils {
    * @param maxAge
    * @return
    */
-
+  
   private static int nextAge( int minAge, int maxAge ) {
     final double std = ( maxAge - minAge ) / 2;
     final double mean = minAge + std;
-
+    
     int age = 0;
     do {
       final Random r = new Random();
       final double value = r.nextGaussian() * std + mean;
       age = (int) Math.round( value );
     } while( age < globalMinAge || age > globalMaxAge );
-
+    
     return age;
   }
-
-
+  
+  
   /**
    * MISSING_COMMENT
    *
@@ -381,7 +456,7 @@ public class DataUtils {
    * @param separator
    * @return
    */
-
+  
   public static List<VeronaCardRecord> parseRecords(List<String> lines, String separator ){
     if( lines == null ){
       throw new NullPointerException();
@@ -389,14 +464,14 @@ public class DataUtils {
     if( separator == null ){
       throw new NullPointerException();
     }
-
+    
     final List<VeronaCardRecord> records = new ArrayList<VeronaCardRecord>();
     for( String l : lines ){
       records.add( parseRecord( l, separator ) );
     }
     return records;
   }
-
+  
   /**
    * MISSING_COMMENT
    *
@@ -404,20 +479,20 @@ public class DataUtils {
    * @param separator
    * @return
    */
-
-  public static VeronaCardRecord parseRecord(String line, String separator ) {
+  
+  public static VeronaCardRecord parseRecord( String line, String separator ) {
     if( line == null ) {
       throw new NullPointerException();
     }
     if( separator == null ) {
       throw new NullPointerException();
     }
-
+    
     final VeronaCardRecord r = new VeronaCardRecord();
-
+    
     final StringTokenizer tk = new StringTokenizer( line, separator );
     int i = 0;
-
+    
     // new version of the input file!
     while( tk.hasMoreTokens() ){
       final String token = tk.nextToken();
@@ -506,7 +581,7 @@ public class DataUtils {
     /*if( r.getTime() == null ){
       System.out.printf( "here" );
     }//*/
-
+    
     return r;
   }
 }

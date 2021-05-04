@@ -16,27 +16,30 @@ public class RestaurantWritable
    * Default partitioning fields
    */
   // todo: 6 partizioni
-  /*public static final Integer[] DEFAULT_PARTITION = { 1,2,4,7,9,11 }; // coordX, coordY, zipcode, $date, score, restaurantId //*/
-  public static final Integer[] DEFAULT_PARTITION = { 1,2,4,7,9 }; // coordX, coordY, zipcode, $date, score //*/
+  /*public static final Integer[] DEFAULT_PARTITION = { 1,2,4,7,9,11 }; // coordX, coordY, zipcode, time, score, restaurantId //*/
+  public static final Integer[] DEFAULT_PARTITION = { 1,2,4,7,9 }; // coordX, coordY, zipcode, time, score //*/
 
   /**
    * Fields of the input file
    */
   public static final String[] attributes = {
-          "building",
-          "coordX",
-          "coordY",
-          "street",
-          "zipcode",
-          "borough",
-          "cuisine",
-          "time",
-          "grade",
-          "score",
-          "name",
-          "restaurantId"
+      // "coordX", "coordY", "zipcode", "time", "score", "restaurantId"
+      "building",
+      "coordX",
+      "coordY",
+      "street",
+      "zipcode",
+      "borough",
+      "cuisine",
+      "time",
+      "grade",
+      "score",
+      "name",
+      "restaurantId"
   };
-
+  
+  //static final Logger LOGGER = LogManager.getLogger( RestaurantWritable.class );
+  
   public static String SPLITERATOR = ",";
 
   public RestaurantWritable() {
@@ -85,17 +88,17 @@ public class RestaurantWritable
   @Override
   public int compareTo( ContextData o ) {
     RestaurantRecord restaurantRecord = ( RestaurantRecord ) o;
-    if ( this.time < restaurantRecord.time)
+    if( this.time < restaurantRecord.time )
       return -1;
-    if ( this.time > restaurantRecord.time)
+    if( this.time > restaurantRecord.time )
       return 1;
-    if ( this.coordX < restaurantRecord.coordX )
+    if( this.coordX < restaurantRecord.coordX )
       return 1;
-    if ( this.coordX > restaurantRecord.coordX )
+    if( this.coordX > restaurantRecord.coordX )
       return -1;
-    if ( this.coordY < restaurantRecord.coordY )
+    if( this.coordY < restaurantRecord.coordY )
      return 1;
-    if ( this.coordY > restaurantRecord.coordY )
+    if( this.coordY > restaurantRecord.coordY )
      return -1;
     return 0;
   }

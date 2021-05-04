@@ -409,7 +409,7 @@ public class OneGrid extends Configured {
     return true;
   }
 
-  private boolean checkPartitionArgument(String s ) {
+  private boolean checkPartitionArgument( String s ) {
     if( !s.startsWith( posPartLabel ) ) {
       return false;
     }
@@ -434,7 +434,7 @@ public class OneGrid extends Configured {
         + "<mbr (Rectangle: (xmin,ymin,...)-(xmax,ymax,...) or compute)> " // 2
         + "<cell_side (0.0 if mbr=compute)> " // 3
         + "<moran_index (MI|noMI)> " // 4
-        + "<context (context=n1,n2,...)> " // 5
+        + "<partition_fields (context=n1,n2,...)> " // 5
         + "<input_path> " // 6
         + "<output_path>%n", // 7
         wktFormat, csvFormat, csvMultiFormat );
@@ -446,13 +446,15 @@ public class OneGrid extends Configured {
    */
 
   private void processContextParameter( String s ) {
-    final int start = s.indexOf( "=" );
-    s = s.substring( start + 1 );
-    // default value
+    s = s.replace( posPartLabel + "=", "" );
+    // Default value
     if( s.isEmpty() || s.contains( "-1" ) ) {
-      // todo: parametrize !!!
-      /*posPart = VeronaCardWritable.DEFAULT_PARTITION;//*/
-      posPart = RestaurantWritable.DEFAULT_PARTITION;//*/
+      if( inputFormatClass == VeronaCardCSVInputFormat.class ) {
+        posPart = VeronaCardWritable.DEFAULT_PARTITION;
+      }
+      if( inputFormatClass == RestaurantCSVInputFormat.class ) {
+        posPart = RestaurantWritable.DEFAULT_PARTITION;
+      }
     } else {
       final StringTokenizer tk = new StringTokenizer( s, "," );
       int i = 0;
@@ -962,7 +964,6 @@ public class OneGrid extends Configured {
     private boolean computeMoranIndex;
     private int numDims;
     private Double[] cellSides = new Double[maxNumDims];
-    private Integer[] posPart = new Integer[maxNumDims];
 
     // === Methods =============================================================
 

@@ -1,9 +1,7 @@
 package it.univr.veronacard;
 
 import it.univr.hadoop.ContextData;
-import it.univr.partitioning.DataUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import it.univr.veronacard.partitioning.DataUtils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -153,25 +151,27 @@ public class VeronaCardWritable
     VeronaCardRecord veronaCardRecord = DataUtils.parseRecord( line, SPLITERATOR );
     return new VeronaCardWritable( veronaCardRecord );
   }
-
+  
   @Override
-  public String toString() {
+  public String toString() { return toString( SPLITERATOR ); }
+  
+  public String toString( String separator ) {
     final StringBuilder b = new StringBuilder();
 
     b.append( x );
-    b.append( "," );
+    b.append( separator );
     b.append( y );
-    b.append( "," );
+    b.append( separator );
     b.append( time );
-    b.append( "," );
+    b.append( separator );
     b.append( age );
-    b.append( "," );
+    b.append( separator );
     b.append( x );
-    b.append( "," );
+    b.append( separator );
     b.append( y );
-    b.append( "," );
+    b.append( separator );
     b.append( time );
-    b.append( "," );
+    b.append( separator );
     b.append( age );
 
     return b.toString();

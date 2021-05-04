@@ -1,4 +1,4 @@
-package it.univr.operations;
+package it.univr.restaurant.operations;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -17,31 +17,33 @@ import static java.lang.String.format;
  */
 public class RangeQueryTests {
 
-  private static final String fileName = "vc_2000_2019_cluster_age_15_55.csv";
+  private static final String fileName = "rt_2000_2019_cluster.csv";
 
-  private static double minX = 10.900;
-  private static double minY = 45.430;
-  private static long minT = 946000000000L;
-  private static int minA = 0;
-  private static double maxX = 11.00;
-  private static double maxY = 45.450;
-  private static long maxT = 1200000000000L;
-  private static int maxA = 90;
+  private static double minX = -119.6368672;
+  private static double minY = -28.0168595;
+  private static int minZ = 10001;
+  private static long minT = 1291766400000L;
+  private static int minS = -1;
+  private static int minId = 30075445;
+  private static double maxX = 153.1628795;
+  private static double maxY = 51.6514664;
+  private static int maxZ = 11697;
+  private static long maxT = 1421712000000L;
+  private static int maxS = 131;
+  private static int maxId = 40900694;
 
   private static double xLength = maxX - minX;
   private static double yLength = maxY - minY;
+  private static double zLength = maxZ - minZ;
   private static double tLength = maxT - minT;
-  private static double aLength = maxA - minA;
+  private static double sLength = maxS - minS;
+  private static double idLength = maxId - minId;
 
   private static double[] overlaps = new double[]{
     0.05,
     0.10,
-    0.15,
-    0.25,
-    0.30,
-    0.50,
-    0.75,
-    // 0.95
+    0.20,
+    0.30
   };
 
   private static int numTests = 10;
@@ -54,7 +56,7 @@ public class RangeQueryTests {
 
   public static void main( String[] args ) {
     final Random rg = new Random();
-    final Path p = Paths.get( "range_query_cluster_age.sh" );
+    final Path p = Paths.get( "range_query_cluster.sh" );
 
 
     try( BufferedWriter writer = Files.newBufferedWriter( p ) ) {
@@ -69,19 +71,25 @@ public class RangeQueryTests {
           final double endX = startX + xLength * od;
           final double startY = minY + rg.nextDouble() * ( yLength - yLength * od );
           final double endY = startY + yLength * od;
-          final double startA = minA + rg.nextDouble() * ( aLength - aLength * od );
-          final double endA = startA + aLength * od;
+          final double startZ = minZ + rg.nextDouble() * ( zLength - zLength * od );
+          final double endZ = startZ + zLength * od;
           final double startT = minT + rg.nextDouble() * ( tLength - tLength * od );
           final double endT = startT + tLength * od;
+          final double startS = minS + rg.nextDouble() * ( sLength - sLength * od );
+          final double endS = startS + sLength * od;
+          //final double startId = minId + rg.nextDouble() * ( idLength - idLength * od );
+          //final double endId = startId + idLength * od;
 
-          final String rq = format( "\"Rectangle:(%f,%f,%f,%f)-(%f,%f,%f,%f)\" ",
-                                    startX, startY, startT, startA,
-                                    endX, endY, endT, endA );
+
+          final String rq = format( "\"Rectangle:(%f_%f_%f_%f_%f)_(%f_%f_%f_%f_%f)\" ",
+                                    startX, startY, startZ, startT, startS, //startId,
+                                    endX, endY, endZ, endT, endS//, endId
+          );
           final String areaS = new Double( o ).toString().replace( ".", "_" );
 
           final StringBuilder b1 = new StringBuilder();
           b1.append( "hadoop it.univr.operations.RangeQuery " );
-          b1.append( "CSVMulti 4 " );
+          b1.append( "CSVMulti 5 " );
           b1.append( rq );
           b1.append( "test/output_bc " );
           b1.append( format( "test/output_bc_rq_%s_%s ", areaS, i ) );
@@ -90,7 +98,7 @@ public class RangeQueryTests {
 
           final StringBuilder b2 = new StringBuilder();
           b2.append( "hadoop it.univr.operations.RangeQuery " );
-          b2.append( "CSVMulti 4 " );
+          b2.append( "CSVMulti 5 " );
           b2.append( rq );
           b2.append( "test/output_md " );
           b2.append( format( "test/output_md_rq_%s_%s ", areaS, i ) );
@@ -99,7 +107,7 @@ public class RangeQueryTests {
 
           final StringBuilder b3 = new StringBuilder();
           b3.append( "hadoop it.univr.operations.RangeQuery " );
-          b3.append( "CSVMulti 4 " );
+          b3.append( "CSVMulti 5 " );
           b3.append( rq );
           b3.append( format( "test/%s ", fileName ) );
           b3.append( format( "test/output_csv_rq_%s_%s ", areaS, i ) );

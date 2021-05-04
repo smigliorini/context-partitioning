@@ -30,25 +30,29 @@ public class BoxCountingMapper<V extends ContextData> extends ContextBasedMapper
 
     for( int i = 0; i < numDimensions; i++ ) {
 
-      final String s = conf.get( format( "part-%s", i ) );
+      String s = conf.get( format( "part-%s", i ) );
       final int start = s.indexOf( "(" );
       final int end = s.indexOf( ")" );
 
       if( start == -1 || end == -1 ){
         throw new IllegalArgumentException( format( "Illegal grid specification: %s", s ) );
       }
-      final String value = s.substring( start+1, end );
 
+      s = s.substring( start+1, end );
+      // todo: modificare
       //final StringTokenizer tk = new StringTokenizer( value, "-" );
-      String tmp = value.replace(',', '.');
-      if( tmp.contains("--") )
-        tmp = tmp.replace( "--", ",-" );
-      else
-        tmp = tmp.replace( "-", "," );
-      if( tmp.charAt(0) == ',' )
-        tmp = tmp.replaceFirst( ",", "-" );
+      s = s.replace(',', '.');
+      if( s.contains("--")) {
+        s = s.replace("--", ",-");
+    
+      } else {
+        s = s.replace("-", ",");
+      }
+      if( s.charAt(0) == ',') {
+        s = s.replaceFirst(",", "-");
+      }
 
-      final StringTokenizer tk = new StringTokenizer( tmp, "," );
+      final StringTokenizer tk = new StringTokenizer( s, "," );
       final List<Double> divs = new ArrayList<>();
       Double prev = null;
       while( tk.hasMoreTokens() ){
