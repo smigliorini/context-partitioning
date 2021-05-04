@@ -1,4 +1,5 @@
-package it.univr.partitioning;
+package it.univr.veronacard.partitioning;
+
 
 /**
  * MISSING_COMMENT
@@ -6,17 +7,18 @@ package it.univr.partitioning;
  * @author Mauro Gambini, Sara Migliorini
  * @version 0.0.0
  */
-public class QueryParams{
-  private Double minX;
-  private Double maxX;
-  private Double minY;
-  private Double maxY;
-  private Long minT;
-  private Long maxT;
-  private Integer minAge;
-  private Integer maxAge;
+public class QueryParamsVeronaCard {
+  
+  protected Double minX;
+  protected Double maxX;
+  protected Double minY;
+  protected Double maxY;
+  protected Long minT;
+  protected Long maxT;
+  protected Integer minAge;
+  protected Integer maxAge;
 
-  public QueryParams() {
+  public QueryParamsVeronaCard() {
     minX = null;
     maxX = null;
     minY = null;
@@ -27,7 +29,7 @@ public class QueryParams{
     maxAge = null;
   }
 
-  public QueryParams
+  public QueryParamsVeronaCard
     ( Double minX,
       Double maxX,
       Double minY,
@@ -45,7 +47,19 @@ public class QueryParams{
     this.minAge = minAge;
     this.maxAge = maxAge;
   }
-
+  
+  public QueryParamsVeronaCard( QueryParamsVeronaCard paramsVeronaCard ) {
+    this( paramsVeronaCard.getMinX(),
+        paramsVeronaCard.getMaxX(),
+        paramsVeronaCard.getMinY(),
+        paramsVeronaCard.getMaxY(),
+        paramsVeronaCard.getMinT(),
+        paramsVeronaCard.getMaxT(),
+        paramsVeronaCard.getMinAge(),
+        paramsVeronaCard.getMaxAge()
+    );
+  }
+  
   public Double getMinX() {
     return minX;
   }
