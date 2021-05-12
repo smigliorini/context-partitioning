@@ -81,7 +81,7 @@ public class RangeQueryTests {
           //final double endId = startId + idLength * od;
 
 
-          final String rq = format( "\"Rectangle:(%f_%f_%f_%f_%f)_(%f_%f_%f_%f_%f)\" ",
+          final String rq = format( "\"Rectangle:(%f %f %f %f %f)-(%f %f %f %f %f)\" ",
                                     startX, startY, startZ, startT, startS, //startId,
                                     endX, endY, endZ, endT, endS//, endId
           );

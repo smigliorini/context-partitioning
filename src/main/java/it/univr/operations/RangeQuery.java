@@ -176,12 +176,13 @@ public class RangeQuery extends Configured {
 
     String rqString = args[2];
     rqString = rqString.replace( "Rectangle:", "" );
+    rqString = rqString.replace( ")-(", " " );
     rqString = rqString.replace( "(", "" );
     rqString = rqString.replace( ")", "" );
     //rqString = rqString.replace( "-", "," );
     rqString = rqString.replace(',', '.');
-    rqString = rqString.replace( "_", ",");
-
+    rqString = rqString.replace( " ", ",");
+    
     rangeQuery = rqString;
     inputPath = new Path( args[3] );
     outputPath = new Path( args[4] );

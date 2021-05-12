@@ -75,7 +75,7 @@ public class RangeQueryTests {
           final double endT = startT + tLength * od;
 
           //final String rq = format( "\"Rectangle:(%f,%f,%f,%f)-(%f,%f,%f,%f)\" ",
-          final String rq = format( "\"Rectangle:(%f_%f_%f_%f)_(%f_%f_%f_%f)\" ",
+          final String rq = format( "\"Rectangle:(%f %f %f %f %f)-(%f %f %f %f %f)\" ",
                                     startX, startY, startT, startA,
                                     endX, endY, endT, endA );
           final String areaS = new Double( o ).toString().replace( ".", "_" );
