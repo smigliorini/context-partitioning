@@ -2,6 +2,7 @@ package it.univr.hadoop.mapreduce.mbbox;
 
 import it.univr.hadoop.ContextData;
 import it.univr.hadoop.conf.OperationConf;
+import it.univr.hadoop.conf.PartitionTechnique;
 import it.univr.hadoop.util.ContextBasedUtil;
 import it.univr.hadoop.util.WritablePrimitiveMapper;
 import it.univr.restaurant.RestaurantCSVInputFormat;
@@ -94,8 +95,16 @@ public class MBBoxMapReduce {
         FileInputFormat.setMaxInputSplitSize( job, customConf.getSplitSize( config.technique ) );
       } );
     }//*/
-    FileInputFormat.setMinInputSplitSize( job, 1024*1024*128 );
-    FileInputFormat.setMaxInputSplitSize( job, 1024*1024*128 );
+
+    final long splitSize;
+    if( config.getHContextBasedConf() != null ){
+      splitSize = config.getHContextBasedConf().get().getSplitSize( PartitionTechnique.BOX_COUNT );
+    } else {
+      splitSize = 1024*32;
+    }
+
+    FileInputFormat.setMinInputSplitSize( job, splitSize );
+    FileInputFormat.setMaxInputSplitSize( job, splitSize );
 
     // if the Map and Reduce classes are not inner classes, the command
     // setJarByClass specifies that the Mapper and Reducer implementations

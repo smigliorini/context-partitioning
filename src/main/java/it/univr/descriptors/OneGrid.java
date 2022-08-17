@@ -63,7 +63,7 @@ public class OneGrid extends Configured {
   protected static final int maxNumDims = 10;
   protected static final long gridId = 1000000000;
   // todo: workaround
-  protected static final long defaultSplitSize = 1024 * 1024 * 128;
+  protected static final long defaultSplitSize = 1024 * 32;
 
   private static final String shapePar = "shape";
   private static final String wktShape = "wkt";

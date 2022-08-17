@@ -1,0 +1,7 @@
+Cannot locate configuration: tried hadoop-metrics2-jobtracker.properties,hadoop-metrics2.properties
+No job jar file set.  User classes may not be found. See Job or Job#setJar(String).
+JobTracker metrics system already initialized!
+File size is 4186773
+JobTracker metrics system already initialized!
+Hadoop command-line option parsing not performed. Implement the Tool interface and execute your application with ToolRunner to remedy this.
+No job jar file set.  User classes may not be found. See Job or Job#setJar(String).

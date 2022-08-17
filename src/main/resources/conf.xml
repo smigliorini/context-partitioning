@@ -3,15 +3,15 @@
     <splitSizes>
         <entry>
             <key>ML_GRID</key>
-            <value>134217728</value>   <!--1024 * 1024 * 128 -->
+            <value>32768</value>   <!-- 131072 = 1024 * 32 || 134217728 = 1024 * 1024 * 128 -->
         </entry>
         <entry>
             <key>MD_GRID</key>
-            <value>134217728</value>   <!--1024 * 1024 * 128 -->
+            <value>32768</value>   <!-- 131072 = 1024 * 32 || 134217728 = 1024 * 1024 * 128 -->
         </entry>
         <entry>
-            <key>CONTEXT_AWARE</key>
-            <value>134217728</value>   <!--1024 * 1024 * 128 -->
+            <key>BOX_COUNT</key>
+            <value>32768</value>   <!-- 131072 = 1024 * 32 || 134217728 = 1024 * 1024 * 128 -->
         </entry>
     </splitSizes>
 </configuration>

@@ -178,7 +178,8 @@ public class ContextBasedPartitioner {
 
     final Path[] inputPaths = new Path[config.getFileInputPaths().size()];
     config.getFileInputPaths().toArray( inputPaths );
-    configureSplitSize( config, job );
+    final int splitNumberFiles = configureSplitSize( config, job );
+    OperationConf.setSplitNumberFiles( config, splitNumberFiles );
     FileInputFormat.setInputPaths( job, inputPaths );
     job.setInputFormatClass( inputFormatClass );
     return job;
@@ -255,7 +256,9 @@ public class ContextBasedPartitioner {
         LOGGER.warn( "Next property is: " + OperationConf.getMultiLevelMapperProperty( config ) );
         job = Job.getInstance( config, "CBMR" );
         job.setJarByClass( ContextBasedPartitioner.class );
-        configureSplitSize( config, job );
+        //configureSplitSize( config, job );
+        final int splitNumberFiles = configureSplitSize( config, job );
+        OperationConf.setSplitNumberFiles( config, splitNumberFiles );
         Vector<Path> newInputs = new Vector<>( Arrays.stream( fileSystem.listStatus( outputPath ) )
                                                      .filter( f -> f.isFile() )
                                                      .map( f -> f.getPath() )
@@ -373,11 +376,11 @@ public class ContextBasedPartitioner {
    * @throws IOException
    */
 
-  private void configureSplitSize( OperationConf config, Job job ) throws IOException {
+  private int configureSplitSize( OperationConf config, Job job ) throws IOException {
     if( config.hContextBasedConf.isPresent() ) {
       // todo check how to load conf.xml
-      // final Long splitSize = config.hContextBasedConf.get().getSplitSize( config.technique );
-      final Long splitSize = new Long( 1024*1024*128 );
+      final Long splitSize = config.hContextBasedConf.get().getSplitSize( config.technique );
+      //final Long splitSize = new Long( 1024*1024*128 );
       FileInputFormat.setMinInputSplitSize( job, splitSize );
       FileInputFormat.setMaxInputSplitSize( job, splitSize );
 
@@ -392,11 +395,14 @@ public class ContextBasedPartitioner {
         }
         // Plus 1 cause of coherence with input format class, which return number of splits
         splitNumberFiles = (int) ceil( totalSize / splitSize ) + 1;
-        OperationConf.setSplitNumberFiles( config, splitNumberFiles );
+        //OperationConf.setSplitNumberFiles( config, splitNumberFiles );
         LOGGER.info( format( "Splits number are: %d", splitNumberFiles ) );
+        return splitNumberFiles;
       }
+      return 1;
     } else {
       //TODO Possible alternative for default split size from Hadoop system
+      return 1;
     }
   }
 

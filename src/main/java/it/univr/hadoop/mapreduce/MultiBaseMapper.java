@@ -33,7 +33,9 @@ public abstract class MultiBaseMapper<KEYIN, VALUEIN,
   @Override
   protected void setup( Context context ) throws IOException, InterruptedException {
     super.setup( context );
-    int splitNumberFiles = OperationConf.getSplitNumberFiles( context.getConfiguration() );
+    // todo fast fix
+    int splitNumberFiles = 32;
+    //int splitNumberFiles = OperationConf.getSplitNumberFiles( context.getConfiguration() );
     Long contextSetDim = OperationConf.getContextSetDim( context.getConfiguration() );
     partition = OperationConf.getPartitionFields( context.getConfiguration() );
     propertyMinMaxMap = new HashMap<>( contextSetDim.intValue() );
